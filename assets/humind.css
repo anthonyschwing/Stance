@@ -181,7 +181,7 @@ a{color:inherit;text-decoration:none}
 .nav-in{display:flex;align-items:center;gap:28px;height:70px;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 .brand{display:flex;align-items:center;gap:11px;font-family:var(--f-display);font-weight:700;font-size:23px;letter-spacing:-.025em}
 /* Official Humind symbol (Brand Kit) — used as-is, purple-on-transparent. */
-.mark{display:inline-block;flex:0 0 auto;background:url("humind-symbol.png") center/contain no-repeat;border-radius:0;box-shadow:none}
+.mark{display:inline-block;flex:0 0 auto;background:url("stance-symbol.svg") center/contain no-repeat;border-radius:0;box-shadow:none}
 .brand .mark{width:38px;height:33px;position:static}
 .brand .mark::after{content:none}
 .brand .ph{display:none}

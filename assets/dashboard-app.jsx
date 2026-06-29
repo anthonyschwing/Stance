@@ -190,7 +190,7 @@ function SummaryModal({ s, onClose }) {
   .footer-brand{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9CA3AF;letter-spacing:.06em;}
   @media print{body{padding:40px 48px;}@page{margin:0;size:A4;}}
 </style></head><body>
-<div class="logo"><img src="${base}/assets/humind-symbol.png" alt="Stance"><span class="logo-name">Stance</span></div>
+<div class="logo"><img src="${base}/assets/stance-symbol.svg" alt="Stance"><span class="logo-name">Stance</span></div>
 <div class="badge">AI-generated · ${s.date || new Date().toLocaleDateString('en-GB', {month:'short',year:'numeric'})}</div>
 <h1>${s.head || s.title || 'Executive Workforce Briefing'}</h1>
 <div class="meta">PREPARED FOR ${(s.for || 'Executive Leadership').toUpperCase()} · ${window.T('d.sum.emp','12,480 EMPLOYEES')}</div>

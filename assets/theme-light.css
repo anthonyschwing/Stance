@@ -92,7 +92,7 @@ body{background:#F5F7FA;color:var(--text)}
 .nav-ghost:hover{color:var(--text)}
 .brand{color:var(--text)}
 .brand .mark{
-  background:url("humind-symbol.png") center/contain no-repeat;
+  background:url("stance-symbol.svg") center/contain no-repeat;
   box-shadow:none;border-radius:0;
 }
 .brand .ph{color:var(--text-4)}
