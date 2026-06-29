@@ -57,7 +57,7 @@ function TweaksPanel({ title, children }) {
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          position:'fixed', bottom:22, right:22, zIndex:9000,
+          position:'fixed', bottom:76, right:16, zIndex:9000,
           width:44, height:44, borderRadius:'50%', border:'1px solid rgba(255,255,255,.18)',
           background:'linear-gradient(180deg,#8B5CF6,#6D28D9)',
           boxShadow:'0 0 0 1px rgba(124,58,237,.55),0 10px 30px -10px rgba(124,58,237,.8)',
