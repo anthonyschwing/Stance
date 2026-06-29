@@ -430,21 +430,15 @@ main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
 
 /* Glassmorphism — cards et surfaces */
 .bcard, .stepc, .icard, .pcard,
-.panel, .kpi, .player-card, .exec-doc, .drop {
-  background: rgba(17,24,39,.45) !important;
+.panel, .kpi, .player-card, .exec-doc, .drop, .uc {
+  background: rgba(255,255,255,.05) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(167,139,250,.10) !important;
-}
-.uc {
-  background: rgba(17,24,39,.45) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(167,139,250,.12) !important;
+  border: 1px solid rgba(167,139,250,.20) !important;
 }
 .pcard.feat {
   background: rgba(124,58,237,.18) !important;
-  border-color: rgba(124,58,237,.4) !important;
+  border-color: rgba(124,58,237,.45) !important;
 }
 
 /* Mobile — halos en absolute (fix iOS), 50% */
