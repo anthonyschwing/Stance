@@ -362,59 +362,115 @@ body[data-hero="split"] .hero-copy{ max-width:600px; padding-top:6px; }
   .hero h1{ font-size:clamp(42px,8.5vw,60px); }
 }
 
-/* ---- Hero mesh gradient ---- */
+/* ---- Global mesh gradient + fixed halos ---- */
 @keyframes gradientShift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-@keyframes pulse1 {
-  from { opacity: .6; transform: scale(1); }
-  to   { opacity: 1;  transform: scale(1.1); }
+@keyframes float1 {
+  0%, 100% { transform: translate(0px, 0px); }
+  33%       { transform: translate(25px, -35px); }
+  66%       { transform: translate(-15px, 20px); }
 }
-@keyframes pulse2 {
-  from { opacity: .4; transform: scale(1.05); }
-  to   { opacity: .8; transform: scale(.95); }
+@keyframes float2 {
+  0%, 100% { transform: translate(0px, 0px); }
+  50%       { transform: translate(-20px, 30px); }
 }
-
-.hero { overflow: hidden; }
-
-.hero-mesh {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 0;
+@keyframes float3 {
+  0%, 100% { transform: translate(0px, 0px); }
+  50%       { transform: translate(15px, -20px); }
 }
 
-/* Base — shifting gradient */
-.hero-mesh__base {
-  position: absolute; inset: 0;
+/* Body animated gradient */
+body {
   background: linear-gradient(-45deg, #0B0F19, #1a0533, #0d1b4b, #1a0533, #0B0F19);
   background-size: 400% 400%;
-  animation: gradientShift 12s ease infinite;
+  animation: gradientShift 15s ease infinite;
+  min-height: 100vh;
 }
 
-/* Halo 1 — violet central */
-.hero-mesh__halo1 {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 40% 40%, rgba(124,58,237,.3) 0%, transparent 60%);
-  animation: pulse1 8s ease-in-out infinite alternate;
+/* Neutralise le fond existant du .field::before */
+.field::before { background: none !important; filter: none !important; }
+
+/* Fixed halos */
+.page-halo {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; z-index: 0;
+  will-change: transform;
+}
+.page-halo--1 {
+  top: 20%; left: -10%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,.22) 0%, transparent 65%);
+  filter: blur(80px);
+  animation: float1 10s ease-in-out infinite;
+}
+.page-halo--2 {
+  top: 50%; right: -10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(79,70,229,.18) 0%, transparent 65%);
+  filter: blur(70px);
+  animation: float2 13s ease-in-out infinite;
+}
+.page-halo--3 {
+  bottom: 10%; left: 30%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(167,139,250,.15) 0%, transparent 65%);
+  filter: blur(60px);
+  animation: float3 9s ease-in-out infinite;
 }
 
-/* Halo 2 — bleu droit */
-.hero-mesh__halo2 {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 50% at 80% 60%, rgba(79,70,229,.2) 0%, transparent 60%);
-  animation: pulse2 11s ease-in-out infinite alternate;
-}
-
-/* Hero content above mesh */
+/* Hero content above everything */
+.hero { overflow: hidden; }
 .hero > .wrap { position: relative; z-index: 1; }
 
-/* Mobile — durée x1.5, opacités -20% */
+/* Sections transparentes — laissent voir le fond animé */
+.section { background: transparent !important; }
+.player-card { background: rgba(17,24,39,.78) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.exec-doc { background: rgba(17,24,39,.82) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+/* Glassmorphism sur les surfaces */
+.bcard, .stepc, .icard {
+  background: rgba(17,24,39,.72) !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(31,41,55,.8) !important;
+}
+.pcard {
+  background: rgba(17,24,39,.75) !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-color: rgba(31,41,55,.8) !important;
+}
+.pcard.feat {
+  background: rgba(124,58,237,.12) !important;
+  border-color: rgba(124,58,237,.4) !important;
+}
+.panel, .kpi {
+  background: rgba(17,24,39,.68) !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+
+/* Mobile — halos en absolute (fix iOS), taille 50%, durée x1.5 */
 @media (max-width: 768px) {
-  .hero-mesh__base  { animation-duration: 18s; }
-  .hero-mesh__halo1 { animation-duration: 12s; background: radial-gradient(ellipse 80% 60% at 40% 40%, rgba(124,58,237,.24) 0%, transparent 60%); }
-  .hero-mesh__halo2 { animation-duration: 16.5s; background: radial-gradient(ellipse 60% 50% at 80% 60%, rgba(79,70,229,.16) 0%, transparent 60%); }
+  body { animation-duration: 22.5s; }
+  .page-halo { position: absolute; }
+  .page-halo--1 {
+    width: 300px; height: 300px;
+    animation-duration: 15s;
+    background: radial-gradient(circle, rgba(124,58,237,.18) 0%, transparent 65%);
+  }
+  .page-halo--2 {
+    width: 250px; height: 250px;
+    animation-duration: 19.5s;
+    background: radial-gradient(circle, rgba(79,70,229,.14) 0%, transparent 65%);
+  }
+  .page-halo--3 {
+    width: 200px; height: 200px;
+    animation-duration: 13.5s;
+    background: radial-gradient(circle, rgba(167,139,250,.12) 0%, transparent 65%);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-mesh__base, .hero-mesh__halo1, .hero-mesh__halo2 { animation: none; }
+  body { animation: none; }
+  .page-halo { animation: none; }
 }
