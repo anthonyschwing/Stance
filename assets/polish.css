@@ -364,48 +364,63 @@ body[data-hero="split"] .hero-copy{ max-width:600px; padding-top:6px; }
 
 /* ---- Hero orbs ---- */
 @keyframes orb-float-1 {
-  0%,100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(40px, -60px) scale(1.08); }
-  66%      { transform: translate(-30px, 40px) scale(.94); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-30px); }
 }
 @keyframes orb-float-2 {
-  0%,100% { transform: translate(0, 0) scale(1); }
-  40%     { transform: translate(-50px, 50px) scale(1.06); }
-  70%     { transform: translate(35px, -30px) scale(.96); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(30px); }
 }
 @keyframes orb-float-3 {
-  0%,100% { transform: translate(0, 0) scale(1); }
-  30%     { transform: translate(30px, 55px) scale(.95); }
-  65%     { transform: translate(-40px, -40px) scale(1.07); }
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(22px, -22px); }
 }
+
+.hero { overflow: hidden; }
+
 .hero-orbs {
-  position: absolute; inset: 0; overflow: hidden;
-  pointer-events: none; z-index: -1;
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
 }
 .hero-orb {
   position: absolute; border-radius: 50%;
-  filter: blur(80px); will-change: transform;
+  filter: blur(80px); mix-blend-mode: normal;
+  will-change: transform;
 }
+
+/* Orb 1 — center-left, slightly above H1 */
 .hero-orb--1 {
-  width: 520px; height: 520px;
-  top: -120px; left: -80px;
-  background: radial-gradient(circle, #7C3AED 0%, transparent 70%);
-  opacity: .18;
-  animation: orb-float-1 10s ease-in-out infinite;
+  width: 600px; height: 600px;
+  left: 2%; top: 5%;
+  background: #7C3AED;
+  opacity: .22;
+  animation: orb-float-1 12s ease-in-out infinite;
 }
+/* Orb 2 — top-right */
 .hero-orb--2 {
-  width: 440px; height: 440px;
-  top: 60px; right: -60px;
-  background: radial-gradient(circle, #A78BFA 0%, transparent 70%);
+  width: 400px; height: 400px;
+  right: -60px; top: -40px;
+  background: #A78BFA;
   opacity: .15;
-  animation: orb-float-2 8s ease-in-out infinite;
+  animation: orb-float-2 9s ease-in-out infinite;
 }
+/* Orb 3 — bottom-left */
 .hero-orb--3 {
-  width: 380px; height: 380px;
-  bottom: -60px; left: 38%;
-  background: radial-gradient(circle, #4F46E5 0%, transparent 70%);
-  opacity: .20;
-  animation: orb-float-3 12s ease-in-out infinite;
+  width: 300px; height: 300px;
+  left: -40px; bottom: -40px;
+  background: #4F46E5;
+  opacity: .18;
+  animation: orb-float-3 15s ease-in-out infinite;
+}
+
+/* Hero content above orbs */
+.hero > .wrap { position: relative; z-index: 1; }
+
+/* Mobile — 60% size */
+@media (max-width: 768px) {
+  .hero-orb--1 { width: 360px; height: 360px; }
+  .hero-orb--2 { width: 240px; height: 240px; }
+  .hero-orb--3 { width: 180px; height: 180px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-orb { animation: none; }
