@@ -384,9 +384,9 @@ body[data-hero="split"] .hero-copy{ max-width:600px; padding-top:6px; }
 
 /* Body animated gradient */
 body {
-  background: linear-gradient(-45deg, #0B0F19, #1a0533, #0d1b4b, #1a0533, #0B0F19);
+  background: linear-gradient(-45deg, #0B0F19, #0f1528, #0d1220, #111827, #0B0F19);
   background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  animation: gradientShift 18s ease infinite;
   min-height: 100vh;
 }
 
@@ -402,21 +402,21 @@ body {
 .page-halo--1 {
   top: 20%; left: -10%;
   width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(124,58,237,.22) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(124,58,237,.10) 0%, transparent 65%);
   filter: blur(80px);
   animation: float1 10s ease-in-out infinite;
 }
 .page-halo--2 {
   top: 50%; right: -10%;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(79,70,229,.18) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(79,70,229,.08) 0%, transparent 65%);
   filter: blur(70px);
   animation: float2 13s ease-in-out infinite;
 }
 .page-halo--3 {
   bottom: 10%; left: 30%;
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(167,139,250,.15) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(167,139,250,.07) 0%, transparent 65%);
   filter: blur(60px);
   animation: float3 9s ease-in-out infinite;
 }
@@ -427,48 +427,14 @@ body {
 
 /* Sections transparentes — laissent voir le fond animé */
 .section { background: transparent !important; }
-.player-card { background: rgba(17,24,39,.78) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.exec-doc { background: rgba(17,24,39,.82) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-
-/* Glassmorphism sur les surfaces */
-.bcard, .stepc, .icard {
-  background: rgba(17,24,39,.72) !important;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border-color: rgba(31,41,55,.8) !important;
-}
-.pcard {
-  background: rgba(17,24,39,.75) !important;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  border-color: rgba(31,41,55,.8) !important;
-}
-.pcard.feat {
-  background: rgba(124,58,237,.12) !important;
-  border-color: rgba(124,58,237,.4) !important;
-}
-.panel, .kpi {
-  background: rgba(17,24,39,.68) !important;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-}
 
 /* Mobile — halos en absolute (fix iOS), taille 50%, durée x1.5 */
 @media (max-width: 768px) {
-  body { animation-duration: 22.5s; }
+  body { animation-duration: 27s; }
   .page-halo { position: absolute; }
-  .page-halo--1 {
-    width: 300px; height: 300px;
-    animation-duration: 15s;
-    background: radial-gradient(circle, rgba(124,58,237,.18) 0%, transparent 65%);
-  }
-  .page-halo--2 {
-    width: 250px; height: 250px;
-    animation-duration: 19.5s;
-    background: radial-gradient(circle, rgba(79,70,229,.14) 0%, transparent 65%);
-  }
-  .page-halo--3 {
-    width: 200px; height: 200px;
-    animation-duration: 13.5s;
-    background: radial-gradient(circle, rgba(167,139,250,.12) 0%, transparent 65%);
-  }
+  .page-halo--1 { width: 300px; height: 300px; animation-duration: 15s; }
+  .page-halo--2 { width: 250px; height: 250px; animation-duration: 19.5s; }
+  .page-halo--3 { width: 200px; height: 200px; animation-duration: 13.5s; }
 }
 @media (prefers-reduced-motion: reduce) {
   body { animation: none; }
