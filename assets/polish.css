@@ -428,27 +428,35 @@ main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
 /* Sections transparentes */
 .section { background: transparent !important; }
 
-/* Glassmorphism — toutes les cards et surfaces */
-.bcard, .stepc, .icard, .pcard, .panel, .kpi,
-.player-card, .exec-doc, .uc, .sig, .drop {
-  background: rgba(17,24,39,.55) !important;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,.06) !important;
+/* Glassmorphism — cards et surfaces */
+.bcard, .stepc, .icard, .pcard,
+.panel, .kpi, .player-card, .exec-doc, .drop {
+  background: rgba(17,24,39,.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(167,139,250,.10) !important;
+}
+.uc {
+  background: rgba(17,24,39,.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(167,139,250,.12) !important;
 }
 .pcard.feat {
   background: rgba(124,58,237,.18) !important;
   border-color: rgba(124,58,237,.4) !important;
 }
 
-/* Mobile — halos en absolute (fix iOS), 50%, backdrop réduit */
+/* Mobile — halos en absolute (fix iOS), 50% */
 @media (max-width: 768px) {
   .page-halo { position: absolute; }
   .page-halo--1 { width: 350px; height: 350px; }
   .page-halo--2 { width: 275px; height: 275px; }
   .page-halo--3 { width: 225px; height: 225px; }
   .bcard, .stepc, .icard, .pcard, .panel, .kpi,
-  .player-card, .exec-doc, .uc, .sig, .drop {
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  .player-card, .exec-doc, .uc, .drop {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
