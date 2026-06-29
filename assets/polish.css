@@ -362,66 +362,59 @@ body[data-hero="split"] .hero-copy{ max-width:600px; padding-top:6px; }
   .hero h1{ font-size:clamp(42px,8.5vw,60px); }
 }
 
-/* ---- Hero orbs ---- */
-@keyframes orb-float-1 {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-30px); }
+/* ---- Hero mesh gradient ---- */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
-@keyframes orb-float-2 {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(30px); }
+@keyframes pulse1 {
+  from { opacity: .6; transform: scale(1); }
+  to   { opacity: 1;  transform: scale(1.1); }
 }
-@keyframes orb-float-3 {
-  0%, 100% { transform: translate(0, 0); }
-  50%       { transform: translate(22px, -22px); }
+@keyframes pulse2 {
+  from { opacity: .4; transform: scale(1.05); }
+  to   { opacity: .8; transform: scale(.95); }
 }
 
 .hero { overflow: hidden; }
 
-.hero-orbs {
+.hero-mesh {
   position: absolute; inset: 0;
   pointer-events: none; z-index: 0;
 }
-.hero-orb {
-  position: absolute; border-radius: 50%;
-  filter: blur(80px); mix-blend-mode: normal;
-  will-change: transform;
+
+/* Base — shifting gradient */
+.hero-mesh__base {
+  position: absolute; inset: 0;
+  background: linear-gradient(-45deg, #0B0F19, #1a0533, #0d1b4b, #1a0533, #0B0F19);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
 }
 
-/* Orb 1 — center-left, slightly above H1 */
-.hero-orb--1 {
-  width: 600px; height: 600px;
-  left: 2%; top: 5%;
-  background: #7C3AED;
-  opacity: .22;
-  animation: orb-float-1 12s ease-in-out infinite;
-}
-/* Orb 2 — top-right */
-.hero-orb--2 {
-  width: 400px; height: 400px;
-  right: -60px; top: -40px;
-  background: #A78BFA;
-  opacity: .15;
-  animation: orb-float-2 9s ease-in-out infinite;
-}
-/* Orb 3 — bottom-left */
-.hero-orb--3 {
-  width: 300px; height: 300px;
-  left: -40px; bottom: -40px;
-  background: #4F46E5;
-  opacity: .18;
-  animation: orb-float-3 15s ease-in-out infinite;
+/* Halo 1 — violet central */
+.hero-mesh__halo1 {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 40% 40%, rgba(124,58,237,.3) 0%, transparent 60%);
+  animation: pulse1 8s ease-in-out infinite alternate;
 }
 
-/* Hero content above orbs */
+/* Halo 2 — bleu droit */
+.hero-mesh__halo2 {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 80% 60%, rgba(79,70,229,.2) 0%, transparent 60%);
+  animation: pulse2 11s ease-in-out infinite alternate;
+}
+
+/* Hero content above mesh */
 .hero > .wrap { position: relative; z-index: 1; }
 
-/* Mobile — 60% size */
+/* Mobile — durée x1.5, opacités -20% */
 @media (max-width: 768px) {
-  .hero-orb--1 { width: 360px; height: 360px; }
-  .hero-orb--2 { width: 240px; height: 240px; }
-  .hero-orb--3 { width: 180px; height: 180px; }
+  .hero-mesh__base  { animation-duration: 18s; }
+  .hero-mesh__halo1 { animation-duration: 12s; background: radial-gradient(ellipse 80% 60% at 40% 40%, rgba(124,58,237,.24) 0%, transparent 60%); }
+  .hero-mesh__halo2 { animation-duration: 16.5s; background: radial-gradient(ellipse 60% 50% at 80% 60%, rgba(79,70,229,.16) 0%, transparent 60%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-orb { animation: none; }
+  .hero-mesh__base, .hero-mesh__halo1, .hero-mesh__halo2 { animation: none; }
 }
