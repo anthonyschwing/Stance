@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stance — Executive Workforce Intelligence</title>
+<link rel="icon" type="image/png" href="assets/humind-symbol.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/humind.css" />
+<link rel="stylesheet" href="assets/theme-light.css" id="themeLight" media="not all" />
+<link rel="stylesheet" href="assets/tweaks.css" />
+<link rel="stylesheet" href="assets/compact.css" />
+<link rel="stylesheet" href="assets/polish.css" />
+<link rel="stylesheet" href="assets/showcase.css" />
+</head>
+<template id="__bundler_thumbnail" data-bg-color="#0B0F19">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#9C8CFF"/>
+        <stop offset="100%" stop-color="#4F46E5"/>
+      </linearGradient>
+    </defs>
+    <rect x="510" y="290" width="180" height="180" rx="44" fill="url(#tg)"/>
+    <text x="600" y="500" font-family="Sora, sans-serif" font-size="64" font-weight="800" fill="#F4F6FC" text-anchor="middle" letter-spacing="-1">Stance</text>
+  </svg>
+</template>
+<body data-theme="dark" data-hero="split" data-density="compact" data-dash="compact" data-kpi="solid">
+
+<div class="field"></div>
+<div class="grid-veil"></div>
+<div class="noise"></div>
+
+<!-- ============================= NAV ============================= -->
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="/" aria-label="Stance home">
+      <span class="mark"></span>
+      <span>Stance</span>
+    </a>
+    <div class="nav-links">
+      <a href="#ask" data-i18n="nav.ask">Ask Stance</a>
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#usecases" data-i18n="nav.usecases">Use cases</a>
+    </div>
+    <div class="nav-cta">
+      <div class="lang-switch" role="group" aria-label="Language / Langue">
+        <button type="button" class="lang-opt" data-lang="en">EN</button>
+        <span class="lang-div" aria-hidden="true">|</span>
+        <button type="button" class="lang-opt" data-lang="fr">FR</button>
+      </div>
+      <a class="nav-ghost" href="/sign-in" data-i18n="nav.signin">Sign in</a>
+      <a class="btn btn-primary btn-sm" href="#cta" data-i18n="nav.demo">Book a Demo</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false" aria-controls="navPanel">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- mobile slide-out menu -->
+<div class="nav-scrim" id="navScrim" hidden></div>
+<aside class="nav-panel" id="navPanel" aria-hidden="true">
+  <div class="np-top">
+    <a class="brand" href="/"><span class="mark"></span><span>Stance</span></a>
+    <button class="np-close" id="navClose" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="np-links">
+    <a class="np-link" href="#ask" data-i18n="nav.ask">Ask Stance</a>
+    <a class="np-link" href="#how" data-i18n="nav.how">How it works</a>
+    <a class="np-link" href="#usecases" data-i18n="nav.usecases">Use cases</a>
+  </nav>
+  <div class="np-foot">
+    <div class="np-lang">
+      <span class="np-lang-lbl" data-i18n="nav.lang">Language</span>
+      <div class="lang-switch" role="group" aria-label="Language / Langue">
+        <button type="button" class="lang-opt" data-lang="en">EN</button>
+        <span class="lang-div" aria-hidden="true">|</span>
+        <button type="button" class="lang-opt" data-lang="fr">FR</button>
+      </div>
+    </div>
+    <a class="btn btn-ghost btn-lg np-signin" href="/sign-in" data-i18n="nav.signin">Sign in</a>
+    <a class="btn btn-primary btn-lg" href="#cta" data-i18n="nav.demo">Book a Demo</a>
+  </div>
+</aside>
+
+<main id="top">
+
+<!-- ============================= HERO ============================= -->
+<section class="section hero" id="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="kicker reveal">
+          <span class="pill pill--ai"><span class="dot"></span><span data-i18n="hero.pill">Executive Workforce Intelligence</span></span>
+        </div>
+        <h1 class="reveal d1" data-comment-anchor="a333b5d094-h1" data-i18n-html="hero.h1">The AI Copilot for
+<span class="grad">Strategic HR Decisions.</span></h1>
+        <p class="lead reveal d2" data-i18n="hero.lead">Stance reads every workforce signal and returns the forecasts your leadership needs to act. Not a dashboard. A decision engine.</p>
+        <div class="hero-cta reveal d3">
+          <a class="btn btn-primary btn-lg" href="/sign-in" data-i18n="hero.cta1">Try the demo</a>
+          <a class="hero-textlink" href="/dashboard" data-i18n="hero.cta2">See Stance in Action</a>
+        </div>
+      </div>
+
+      <!-- LIVE DASHBOARD PREVIEW -->
+      <div class="hero-stage reveal d2">
+        <div class="stage-frame">
+          <div class="stage-top">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <span class="stage-url" data-i18n="stage.url">stance.app / workforce</span>
+            <span class="stage-live"><span class="lv"></span>LIVE</span>
+          </div>
+          <div class="stage-body">
+            <div class="exec-scores">
+              <div class="kpi exec-score">
+                <div class="klabel" data-i18n="stage.health">Workforce Health Score</div>
+                <div class="exec-big"><b data-count="78">78</b><span class="unit">/100</span><em class="exec-tag good" data-i18n="stage.healthy">Healthy</em></div>
+                <div class="exec-bar"><i style="width:78%"></i></div>
+                <div class="kdelta up" data-i18n="stage.health.delta">▲ 3 pts vs last quarter</div>
+              </div>
+              <div class="kpi exec-score">
+                <div class="klabel" data-i18n="stage.risk">Workforce Risk Index</div>
+                <div class="exec-big"><b data-count="62">62</b><span class="unit">/100</span><em class="exec-tag warn" data-i18n="stage.moderate">Moderate</em></div>
+                <div class="exec-bar risk"><i style="width:62%"></i></div>
+                <div class="kdelta up" data-i18n="stage.risk.delta">▼ 5 pts — risk easing</div>
+              </div>
+            </div>
+
+            <div class="stage-cols">
+              <div class="panel" data-comment-anchor="ddd291a2ef-div">
+                <div class="panel-h">
+                  <div>
+                    <div class="pl" data-i18n="stage.fc.label">Workforce Forecast · 12 months</div>
+                    <div class="panel-title" data-i18n="stage.fc.title">Attrition projected to ease to 14% by Q4</div>
+                  </div>
+                  <div class="seg" style="gap: 5px"><button class="on">12M</button><button>1Y</button><button>3Y</button></div>
+                </div>
+                <div class="chart-area">
+                  <svg viewBox="0 0 560 200" preserveAspectRatio="none" width="100%" height="100%">
+                    <defs>
+                      <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="var(--cyan)" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <line x1="0" y1="50" x2="560" y2="50" stroke="rgba(255,255,255,.05)"/>
+                    <line x1="0" y1="100" x2="560" y2="100" stroke="rgba(255,255,255,.05)"/>
+                    <line x1="0" y1="150" x2="560" y2="150" stroke="rgba(255,255,255,.05)"/>
+                    <path class="area-fill" d="M0,58 C70,70 120,84 210,96 C280,104 320,110 340,113 L340,200 L0,200 Z" fill="url(#areaFill)" opacity="0"/>
+                    <path class="area-line" d="M0,58 C70,70 120,84 210,96 C280,104 320,110 340,113" fill="none" stroke="var(--cyan-3)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line class="fc-now" x1="340" y1="14" x2="340" y2="186"/>
+                    <text class="fc-nowlabel" x="346" y="24" data-i18n="stage.now">NOW</text>
+                    <path class="fc-proj" d="M340,113 C400,121 460,138 520,150 C536,153 548,155 560,156"/>
+                    <circle class="area-dot" cx="340" cy="113" r="4.5" fill="var(--cyan-3)"/>
+                    <circle cx="560" cy="156" r="3.5" fill="none" stroke="var(--cyan-3)" stroke-width="2"/>
+                  </svg>
+                </div>
+                <div class="axis-x"><span>Now</span><span>+2m</span><span>+4m</span><span>+6m</span><span>+8m</span><span>+10m</span><span>+12m</span></div>
+              </div>
+
+              <div class="panel exec-side">
+                <div class="exec-block">
+                  <div class="pl" data-i18n="stage.exec">Executive Summary</div>
+                  <p class="exec-narr" data-i18n-html="stage.exec.narr">Workforce health is <b>stable and improving</b>. Risk stays concentrated in <b>2 of 14 units</b>. Acting now is projected to protect <span class="pos">$4.2M</span> in replacement cost and <b>140 roles</b> over the next 12 months.</p>
+                </div>
+                <div class="exec-block">
+                  <div class="pl" data-i18n="stage.rec">AI Recommendations</div>
+                  <div class="sig cyan rec"><span class="sd"></span><div><div class="st" data-i18n="stage.rec1.t">Prioritize EMEA Sales retention</div><div class="ss" data-i18n="stage.rec1.s">Targeted comp review · ~140 roles at risk.</div></div><span class="rec-arrow">→</span></div>
+                  <div class="sig amber rec"><span class="sd"></span><div><div class="st" data-i18n="stage.rec2.t">Rebalance Engineering workload</div><div class="ss" data-i18n="stage.rec2.s">After-hours +42% · burnout cluster forming.</div></div><span class="rec-arrow">→</span></div>
+                </div>
+              </div>
+            </div>
+
+            <form class="copilot" id="heroCopilot" autocomplete="off">
+              <span class="cp-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M18 18l-2-2M6 18l2-2M18 6l-2 2"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+              <div style="flex:1"><span class="cp-label">STANCE COPILOT</span><input id="heroInput" placeholder="Type your request here" data-i18n-ph="stage.ph" data-comment-anchor="7d29026c0b-input" /></div>
+              <button type="submit" class="btn btn-primary btn-sm"><span data-i18n="stage.ask">Ask</span> <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </form>
+            <div id="heroAnswer" class="copilot" style="display:none;align-items:flex-start;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border-color:var(--line)">
+              <span class="cp-ic" style="background:linear-gradient(180deg,#9C8CFF,#6f5cff)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="#fff" stroke="none"/></svg></span>
+              <div style="flex:1"><span class="cp-label" style="color:#b9aeff">Stance answer</span><div id="heroAnswerText" style="font-size:13.5px;color:var(--text-2);line-height:1.6"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= ASK STANCE ============================= -->
+<section class="section section--air section--hair ask" id="ask">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow" data-i18n="ask.eyebrow">Ask Stance</span>
+      <h2 data-i18n-html="ask.h2">Ask a question. <span class="grad">Get a decision.</span></h2>
+      <p class="lead" style="margin-left:auto;margin-right:auto" data-i18n="ask.lead">Stance reads every workforce signal and answers in plain language — with the reasoning, the confidence and the recommended action behind every call.</p>
+    </div>
+
+    <div class="ask-stage reveal">
+      <div class="ask-chips" id="askChips">
+        <button class="ask-chip on" data-q="0"><span class="qd"></span>Which department is most likely to lose talent next quarter?</button>
+        <button class="ask-chip" data-q="1"><span class="qd"></span>Where is burnout risk highest right now?</button>
+        <button class="ask-chip" data-q="2"><span class="qd"></span>What's our 12-month retention outlook?</button>
+      </div>
+
+      <div class="ask-card">
+        <div class="ask-q">
+          <span class="qi"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 9a2.5 2.5 0 1 1 3 2.4c-.9.3-1.5 1-1.5 1.9v.2"/><path d="M11 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
+          <div><span class="qlbl" data-i18n="ask.query">Executive query</span><span class="qt" id="askQ">Which department is most likely to lose talent next quarter?</span></div>
+        </div>
+        <div class="ask-body" id="askBody">
+          <div class="ask-main">
+            <div class="ask-verdict">
+              <span class="vi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span>
+              <p class="vt"><b>EMEA Sales</b> — projected <span class="hot">23% attrition</span> next quarter, the highest of all 14 units.</p>
+            </div>
+            <div class="ask-reason">
+              <div class="rlbl">Stance reasoning</div>
+              <div class="ask-rrow"><span class="rk">Compensation</span><span class="rv"><b>12% below market</b> for the 1–2yr tenure cohort.</span></div>
+              <div class="ask-rrow"><span class="rk">Engagement</span><span class="rv">Pulse down <b>8 pts</b> since Q3 — sharpest org-wide.</span></div>
+              <div class="ask-rrow"><span class="rk">Early signal</span><span class="rv">Regretted-exit rate up <b>2.4×</b> over 90 days.</span></div>
+            </div>
+          </div>
+          <div class="ask-side">
+            <div class="conf">
+              <div class="clbl"><span>AI Confidence</span><b id="confVal">87%</b></div>
+              <div class="ctrack"><span class="cfill" id="confFill" style="width:87%"></span></div>
+              <div class="cnote">Based on 18 months of HRIS + pulse data</div>
+            </div>
+            <div class="ask-actions">
+              <div class="albl">Recommended actions</div>
+              <div class="ask-act high"><span class="ad"></span><span class="at">Run a targeted comp review</span><span class="ax">High</span></div>
+              <div class="ask-act med"><span class="ad"></span><span class="at">Manager 1:1s for at-risk cohort</span><span class="ax">Med</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= HOW IT WORKS ============================= -->
+<section class="section section--air section--hair" id="how">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow" data-i18n="how.eyebrow">How it works</span>
+      <h2 data-i18n-html="how.h2">From scattered data to <span class="grad">strategic decisions.</span></h2>
+      <p class="lead" style="margin-left:auto;margin-right:auto" data-i18n="how.lead">Three steps from raw workforce data to executive recommendations — no data team, no quarter-long projects.</p>
+    </div>
+    <div class="steps steps-3 reveal">
+      <div class="stepc">
+        <div class="num">01</div>
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg></div>
+        <h3 data-i18n="how.s1.t">Connect</h3>
+        <p data-i18n="how.s1.p">Sync your HRIS, surveys, payroll and spreadsheets in minutes. Stance maps and unifies your people data automatically.</p>
+        <div class="meta" data-i18n-html="how.s1.meta">HRIS · <b>40+ connectors</b></div>
+      </div>
+      <div class="step-conn" style="left:calc(33.33% - 14px)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="stepc">
+        <div class="num">02</div>
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg></div>
+        <h3 data-i18n="how.s2.t">Analyze</h3>
+        <p data-i18n="how.s2.p">AI detects the patterns, risks and opportunities hidden across units — scoring every signal and explaining the drivers behind it.</p>
+        <div class="meta" data-i18n-html="how.s2.meta">AI engine · <b>explainable</b></div>
+      </div>
+      <div class="step-conn" style="left:calc(66.66% - 14px)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="stepc">
+        <div class="num">03</div>
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <h3 data-i18n="how.s3.t">Decide</h3>
+        <p data-i18n="how.s3.p">Receive executive recommendations, forecasts and board-ready briefings — with the confidence and reasoning to act now.</p>
+        <div class="meta" data-i18n-html="how.s3.meta">Output · <b>decision-ready</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= USE CASES ============================= -->
+<section class="section section--air section--hair" id="usecases">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow" data-i18n="uc.eyebrow">Use cases</span>
+      <h2 data-i18n-html="uc.h2">Built for the decisions <span class="grad">that move the business.</span></h2>
+      <p class="lead" style="margin-left:auto;margin-right:auto" data-i18n="uc.lead">From talent risk to succession, Stance turns workforce data into the strategic outcomes leadership is measured on.</p>
+    </div>
+    <div class="uc-grid reveal">
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M19 9l-5 5-3-3-4 4"/></svg></span><h3 data-i18n="uc1.t">Reduce Attrition</h3></div>
+        <p data-i18n="uc1.p">Spot regretted exits before they happen and act on the comp, workload and manager drivers behind them.</p>
+        <div class="uc-stat"><b class="pos" data-i18n="uc1.v">−$4.2M</b><span data-i18n="uc1.s">replacement cost protected</span></div>
+      </div>
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><h3 data-i18n="uc2.t">Identify Burnout</h3></div>
+        <p data-i18n="uc2.p">Detect burnout clusters from after-hours, PTO and workload telemetry — weeks before they surface in surveys.</p>
+        <div class="uc-stat"><b>42%</b><span data-i18n="uc2.s">after-hours spike flagged</span></div>
+      </div>
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span><h3 data-i18n="uc3.t">Improve Retention</h3></div>
+        <p data-i18n="uc3.p">Model the impact of interventions before you spend, and direct retention budget where it moves the needle.</p>
+        <div class="uc-stat"><b class="pos">91.4%</b><span data-i18n="uc3.s">projected 12-mo retention</span></div>
+      </div>
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M12 7v5l3 2"/></svg></span><h3 data-i18n="uc4.t">Workforce Forecasting</h3></div>
+        <p data-i18n="uc4.p">Project headcount, attrition and cost 3–24 months out, with scenario modeling for every strategic plan.</p>
+        <div class="uc-stat"><b data-i18n="uc4.v">24mo</b><span data-i18n="uc4.s">predictive horizon</span></div>
+      </div>
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><h3 data-i18n="uc5.t">Talent Risk Detection</h3></div>
+        <p data-i18n="uc5.p">Score flight risk across every unit and tenure cohort — ranked, explained and ready for leadership review.</p>
+        <div class="uc-stat"><b>14</b><span data-i18n="uc5.s">units scored continuously</span></div>
+      </div>
+      <div class="uc">
+        <div class="uc-top"><span class="uci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M21 21v-2a4 4 0 0 0-3-3.9"/><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></span><h3 data-i18n="uc6.t">Succession Planning</h3></div>
+        <p data-i18n="uc6.p">Surface critical-role exposure and bench strength so leadership transitions never catch the board off guard.</p>
+        <div class="uc-stat"><b data-i18n="uc6.v">2 of 14</b><span data-i18n="uc6.s">units flagged at risk</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= FEATURES ============================= -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="shead center reveal">
+      <span class="eyebrow" data-i18n="feat.eyebrow">The capabilities</span>
+      <h2 data-i18n-html="feat.h2">Workforce intelligence, <span class="grad" style="font-family: Sora">end to end.</span></h2>
+      <p class="lead" style="margin-left:auto;margin-right:auto" data-i18n="feat.lead">Stance sits on top of your HRIS, surveys and spreadsheets — turning the signals that move retention, performance and cost into decisions leadership can act on.</p>
+    </div>
+    <div class="cards-3">
+      <div class="bcard reveal d1">
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3 data-i18n="feat1.t">Detect workforce risk</h3>
+        <p data-i18n="feat1.p">Surface attrition, burnout and engagement risk before they hit your P&amp;L — with explainable AI scoring on every flag.</p>
+      </div>
+      <div class="bcard reveal d2">
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/></svg></div>
+        <h3 data-i18n="feat2.t">Generate executive insight</h3>
+        <p data-i18n="feat2.p">Ask any workforce question in plain language. Stance reads your data and returns board-ready answers — with reasoning and sources.</p>
+      </div>
+      <div class="bcard reveal d3">
+        <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none" opacity=".9"/></svg></div>
+        <h3 data-i18n="feat3.t">Act on the forecast</h3>
+        <p data-i18n="feat3.p">Trigger interventions, alerts and board-ready briefings from the signals that matter — on a schedule or in real time.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================= FINAL CTA ============================= -->
+<section class="section" id="cta">
+  <div class="wrap">
+    <div class="cta-final reveal">
+      <span class="eyebrow" data-i18n="cta.eyebrow">Executive Workforce Intelligence</span>
+      <h2 style="margin-top:16px" data-i18n-html="cta.h2">Lead workforce strategy with <span class="grad">decision support, not dashboards.</span></h2>
+      <p class="lead" data-i18n="cta.lead">Join the leadership teams using Stance to forecast workforce risk, act on AI recommendations, and decide with confidence — quarters ahead.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="/dashboard" data-i18n="cta.see">See Stance in Action</a>
+        <a class="btn btn-ghost btn-lg" href="#top" data-i18n="cta.demo">Book a Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= FOOTER ============================= -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-slim">
+      <a class="brand" href="/"><span class="mark"></span><span>Stance</span></a>
+      <nav>
+        <a href="#features" data-i18n="foot.features">Features</a>
+          <a href="/dashboard" data-i18n="foot.dashboard">Dashboard</a>
+      </nav>
+      <span class="meta" data-i18n="foot.meta">© 2026 Stance · SOC 2 Type II · GDPR · ISO 27001</span>
+    </div>
+  </div>
+</footer>
+
+</footer>
+
+</main>
+
+<!-- tweaks mount -->
+<div id="tweaks-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="assets/i18n.js"></script>
+<script src="assets/landing.js"></script>
+<script>
+/* mobile hamburger menu — slide-out panel, scrim, body-lock, esc + link close */
+(function(){
+  var burger=document.getElementById('navBurger'),
+      panel=document.getElementById('navPanel'),
+      scrim=document.getElementById('navScrim'),
+      close=document.getElementById('navClose');
+  if(!burger||!panel) return;
+  function open(o){
+    burger.classList.toggle('on',o);
+    panel.classList.toggle('on',o);
+    scrim.classList.toggle('on',o);
+    burger.setAttribute('aria-expanded',o?'true':'false');
+    panel.setAttribute('aria-hidden',o?'false':'true');
+    if(o){scrim.hidden=false;}
+    document.documentElement.style.overflow=o?'hidden':'';
+  }
+  burger.addEventListener('click',function(){open(!panel.classList.contains('on'));});
+  close.addEventListener('click',function(){open(false);});
+  scrim.addEventListener('click',function(){open(false);});
+  panel.querySelectorAll('.np-link, .np-foot a').forEach(function(a){
+    a.addEventListener('click',function(){open(false);});
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')open(false);});
+  // close if resized back to desktop
+  window.addEventListener('resize',function(){if(window.innerWidth>767)open(false);});
+})();
+</script>
+<script>
+/* Ask Stance — swaps the executive answer card. Isolated IIFE; no dependency
+   on landing.js. Default (Q0) is baked into the DOM so it shows without JS. */
+(function(){
+  var ASK = [
+    {
+      q:"Which department is most likely to lose talent next quarter?",
+      qFr:"Quel département risque le plus de perdre des talents le trimestre prochain ?",
+      verdict:'<b>EMEA Sales</b> — projected <span class="hot">23% attrition</span> next quarter, the highest of all 14 units.',
+      verdictFr:'<b>Ventes EMEA</b> — attrition projetée à <span class="hot">23 %</span> le trimestre prochain, la plus élevée des 14 unités.',
+      reason:[
+        ['Compensation','<b>12% below market</b> for the 1–2yr tenure cohort.'],
+        ['Engagement','Pulse down <b>8 pts</b> since Q3 — sharpest org-wide.'],
+        ['Early signal','Regretted-exit rate up <b>2.4×</b> over 90 days.']
+      ],
+      reasonFr:[
+        ['Rémunération','<b>12 % sous le marché</b> pour la cohorte 1–2 ans.'],
+        ['Engagement','Pouls en baisse de <b>8 pts</b> depuis le T3 — la plus forte de l’organisation.'],
+        ['Signal précoce','Départs regrettés <b>×2,4</b> sur 90 jours.']
+      ],
+      conf:87, cnote:'Based on 18 months of HRIS + pulse data', cnoteFr:'Basé sur 18 mois de données SIRH + pouls',
+      actions:[['high','Run a targeted comp review','High'],['med','Manager 1:1s for at-risk cohort','Med']],
+      actionsFr:[['high','Lancer une révision ciblée des rémunérations','Élevé'],['med','1:1 manager pour la cohorte à risque','Moyen']]
+    },
+    {
+      q:"Where is burnout risk highest right now?",
+      qFr:"Où le risque d’épuisement est-il le plus élevé actuellement ?",
+      verdict:'<b>Engineering</b> — burnout risk is <span class="hot">elevated and rising</span>, concentrated in 3 squads.',
+      verdictFr:'<b>Ingénierie</b> — le risque d’épuisement est <span class="hot">élevé et croissant</span>, concentré sur 3 squads.',
+      reason:[
+        ['After-hours','Activity <b>+42%</b> over the last 3 weeks.'],
+        ['Recovery','PTO utilization <b>−31%</b> versus plan.'],
+        ['Load','Sustained overtime <b>+18%</b> across the org.']
+      ],
+      reasonFr:[
+        ['Heures supp.','Activité <b>+42 %</b> sur les 3 dernières semaines.'],
+        ['Récupération','Utilisation des congés <b>−31 %</b> vs prévu.'],
+        ['Charge','Heures supplémentaires soutenues <b>+18 %</b> dans l’organisation.']
+      ],
+      conf:81, cnote:'Modeled on activity + workload telemetry', cnoteFr:'Modélisé sur l’activité + la charge de travail',
+      actions:[['high','Rebalance sprint workload','High'],['med','Enforce a PTO recovery window','Med']],
+      actionsFr:[['high','Rééquilibrer la charge de sprint','Élevé'],['med','Imposer une fenêtre de récupération','Moyen']]
+    },
+    {
+      q:"What's our 12-month retention outlook?",
+      qFr:"Quelle est notre perspective de rétention à 12 mois ?",
+      verdict:'<span class="pos">91.4% projected retention</span> — improving <b>+2.3 pts</b>, with risk concentrated in 2 of 14 units.',
+      verdictFr:'<span class="pos">91,4 % de rétention projetée</span> — en hausse de <b>+2,3 pts</b>, risque concentré sur 2 des 14 unités.',
+      reason:[
+        ['Trajectory','Stabilizing since the Q3 intervention.'],
+        ['Hotspots','Sales + Ops drive <b>68%</b> of total risk.'],
+        ['Drivers','Compensation <b>42%</b>, career path <b>28%</b>.']
+      ],
+      reasonFr:[
+        ['Trajectoire','Stabilisation depuis l’intervention du T3.'],
+        ['Foyers','Ventes + Opérations concentrent <b>68 %</b> du risque.'],
+        ['Facteurs','Rémunération <b>42 %</b>, parcours de carrière <b>28 %</b>.']
+      ],
+      conf:84, cnote:'12-month forecast · 1,240 records', cnoteFr:'Prévision 12 mois · 1 240 dossiers',
+      actions:[['med','Protect Sales + Ops retention','Med'],['med','Quarterly comp benchmarking','Med']],
+      actionsFr:[['med','Protéger la rétention Ventes + Opérations','Moyen'],['med','Benchmark trimestriel des rémunérations','Moyen']]
+    }
+  ];
+  var chips = document.getElementById('askChips');
+  var qEl = document.getElementById('askQ');
+  var body = document.getElementById('askBody');
+  if(!chips || !body) return;
+
+  function isFr(){ return window.StanceI18N && window.StanceI18N.getLang() === 'FR'; }
+  var UI = {
+    en:{ reasoning:'Stance reasoning', conf:'AI Confidence', actions:'Recommended actions' },
+    fr:{ reasoning:'Raisonnement Stance', conf:'Confiance IA', actions:'Actions recommandées' }
+  };
+  function loc(d){
+    var fr = isFr();
+    return {
+      q:        fr && d.qFr       ? d.qFr       : d.q,
+      verdict:  fr && d.verdictFr ? d.verdictFr : d.verdict,
+      reason:   fr && d.reasonFr  ? d.reasonFr  : d.reason,
+      conf:     d.conf,
+      cnote:    fr && d.cnoteFr   ? d.cnoteFr   : d.cnote,
+      actions:  fr && d.actionsFr ? d.actionsFr : d.actions
+    };
+  }
+
+  var active = 0;
+  function render(idx){
+    var d = loc(ASK[idx]);
+    var ui = isFr() ? UI.fr : UI.en;
+    var reason = d.reason.map(function(r){
+      return '<div class="ask-rrow"><span class="rk">'+r[0]+'</span><span class="rv">'+r[1]+'</span></div>';
+    }).join('');
+    var acts = d.actions.map(function(a){
+      return '<div class="ask-act '+a[0]+'"><span class="ad"></span><span class="at">'+a[1]+'</span><span class="ax">'+a[2]+'</span></div>';
+    }).join('');
+    qEl.textContent = d.q;
+    body.innerHTML =
+      '<div class="ask-main">'+
+        '<div class="ask-verdict"><span class="vi"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span>'+
+          '<p class="vt">'+d.verdict+'</p></div>'+
+        '<div class="ask-reason"><div class="rlbl">'+ui.reasoning+'</div>'+reason+'</div>'+
+      '</div>'+
+      '<div class="ask-side">'+
+        '<div class="conf"><div class="clbl"><span>'+ui.conf+'</span><b>'+d.conf+(isFr()?' %':'%')+'</b></div>'+
+          '<div class="ctrack"><span class="cfill" style="width:0%"></span></div>'+
+          '<div class="cnote">'+d.cnote+'</div></div>'+
+        '<div class="ask-actions"><div class="albl">'+ui.actions+'</div>'+acts+'</div>'+
+      '</div>';
+    // animate the confidence fill
+    var fill = body.querySelector('.cfill');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ fill.style.width = d.conf+'%'; }); });
+  }
+
+  function relabelChips(){
+    var fr = isFr();
+    chips.querySelectorAll('.ask-chip').forEach(function(c){
+      var i = +c.dataset.q;
+      c.innerHTML = '<span class="qd"></span>' + (fr && ASK[i].qFr ? ASK[i].qFr : ASK[i].q);
+    });
+  }
+
+  chips.addEventListener('click', function(e){
+    var btn = e.target.closest('.ask-chip');
+    if(!btn) return;
+    active = +btn.dataset.q;
+    chips.querySelectorAll('.ask-chip').forEach(function(c){ c.classList.remove('on'); });
+    btn.classList.add('on');
+    render(active);
+  });
+
+  // instant re-localize on language switch
+  window.addEventListener('stance:lang', function(){ relabelChips(); render(active); });
+  relabelChips();
+  render(active);
+})();
+</script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="assets/tweaks-app.jsx"></script>
+</body>
+</html>

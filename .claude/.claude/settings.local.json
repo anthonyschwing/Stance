@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\antho\\\\Desktop\\\\humind\\\\workflows\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\antho\\\\.claude\\\\projects\\\\C--Users-antho-Desktop-humind--claude\\\\memory\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(ping -n 8 127.0.0.1)",
+      "Bash(curl -s -o nul -w \"%{http_code}\" http://localhost:3456/landing.html)"
+    ]
+  }
+}

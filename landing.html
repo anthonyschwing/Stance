@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stance — People Intelligence for the C-Suite</title>
+  <meta name="description" content="Stance turns scattered HR data into board-ready intelligence — attrition prediction, employee insights, and executive briefings, powered by AI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0B0F19;
+      --bg2:       #0D1220;
+      --surface:   #111827;
+      --surface2:  #161D2E;
+      --border:    #1F2937;
+      --border2:   #2D3748;
+      --text:      #F9FAFB;
+      --text2:     #9CA3AF;
+      --text3:     #6B7280;
+      --text4:     #4B5563;
+      --g1: #A78BFA; --g2: #7C3AED; --g3: #6D28D9;
+      --green:  #34D399; --red: #F87171; --amber: #FBBF24; --orange: #FB923C;
+      --r: 8px; --r-sm: 6px; --r-lg: 12px;
+      --sh: 0 8px 32px rgba(0,0,0,.6);
+      --sh-sm: 0 2px 8px rgba(0,0,0,.4);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+    .g-text{background:linear-gradient(135deg,var(--g1),var(--g2) 50%,var(--g3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .g-bg{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));}
+
+    /* ── NAV ── */
+    nav{position:fixed;inset:0 0 auto 0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 max(40px,calc(50vw - 600px));border-bottom:1px solid transparent;transition:background .2s,border-color .2s;}
+    nav.stuck{background:rgba(11,15,25,.97);border-color:var(--border);}
+    .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-weight:700;font-size:16px;}
+    .logo-mark{width:22px;height:22px;border-radius:6px;flex-shrink:0;}
+    .nav-links{display:flex;align-items:center;gap:32px;}
+    .nav-links a{font-size:13.5px;font-weight:500;color:var(--text2);text-decoration:none;transition:color .15s;}
+    .nav-links a:hover{color:var(--text);}
+    .nav-right{display:flex;align-items:center;gap:16px;}
+    .nav-signin{font-size:13.5px;font-weight:500;color:var(--text2);text-decoration:none;transition:color .15s;}
+    .nav-signin:hover{color:var(--text);}
+    .lang-switch{display:flex;align-items:center;gap:6px;}
+    .lang-btn{background:none;border:none;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;letter-spacing:.05em;transition:color .15s;padding:0;}
+    .lang-btn:hover{color:var(--text2);}
+    .lang-btn.active{color:#A78BFA;}
+    .lang-sep{color:var(--border2);font-size:12px;}
+
+    /* ── BUTTONS ── */
+    .btn{display:inline-flex;align-items:center;gap:7px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border:none;border-radius:var(--r);cursor:pointer;text-decoration:none;transition:opacity .15s,transform .1s;white-space:nowrap;}
+    .btn:hover{transform:translateY(-1px);}
+    .btn-primary{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g3));color:#fff;padding:10px 20px;}
+    .btn-primary:hover{opacity:.88;}
+    .btn-dark{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:9px 18px;}
+    .btn-dark:hover{background:#1e2a3a;}
+    .btn-ghost{background:transparent;color:var(--text2);padding:9px 14px;font-weight:500;}
+    .btn-ghost:hover{color:var(--text);}
+    .hero-cta-secondary{font-size:14px;color:var(--text2);background:none;border:none;padding:9px 4px;text-decoration:none;font-weight:500;transition:color .15s;cursor:pointer;}
+    .hero-cta-secondary:hover{color:var(--text);}
+
+    /* ── HERO ── */
+    .hero{min-height:100vh;display:grid;grid-template-columns:1fr 1.05fr;align-items:center;padding:76px max(40px,calc(50vw - 600px)) 64px;gap:40px;max-width:1280px;margin:0 auto;}
+
+    .hero-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:26px;}
+    .hero-badge-dot{width:6px;height:6px;background:var(--g1);border-radius:50%;}
+
+    .hero-h1{font-size:clamp(38px,4.4vw,60px);font-weight:800;line-height:1.06;letter-spacing:-.035em;margin-bottom:16px;}
+
+    .hero-sub{font-size:15px;line-height:1.7;color:var(--text2);margin-bottom:28px;max-width:400px;}
+
+    .hero-ctas{display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+
+    .trust-row{display:flex;align-items:center;gap:0;}
+    .trust-item{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text4);}
+    .trust-sep{width:1px;height:12px;background:var(--border2);margin:0 14px;}
+
+    /* ── MOCKUP ── */
+    .mockup-wrap{position:relative;max-width:560px;margin-left:auto;}
+    .mockup-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);}
+
+    .chrome{background:#080C14;border-bottom:1px solid var(--border);height:34px;display:flex;align-items:center;padding:0 14px;gap:10px;}
+    .chrome-dots{display:flex;gap:5px;}
+    .chrome-dot{width:10px;height:10px;border-radius:50%;}
+    .cd-r{background:#FF5F57;} .cd-y{background:#FFBD2E;} .cd-g{background:#28CA41;}
+    .chrome-url{flex:1;max-width:220px;margin:0 auto;height:21px;background:#0F1623;border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;padding:0 9px;gap:5px;font-size:11px;color:var(--text3);}
+    .url-dot{width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0;}
+
+    /* KPI strip */
+    .mkp-kpis{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);}
+    .mkp-kpi{padding:10px 12px;border-right:1px solid var(--border);}
+    .mkp-kpi:last-child{border-right:none;}
+    .mkp-kpi-lbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+    .mkp-kpi-val{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--text);line-height:1;margin-bottom:2px;}
+    .mkp-kpi-trend{font-size:9.5px;font-weight:600;color:var(--text3);}
+    .t-up{color:var(--red);} .t-dn{color:var(--green);}
+
+    /* Panels */
+    .mkp-panels{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+    .mkp-panel{padding:12px;}
+    .mkp-panel+.mkp-panel{border-left:1px solid var(--border);}
+    .mkp-plbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+    .mkp-big{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:3px;}
+    .mkp-desc{font-size:10.5px;color:var(--text2);line-height:1.4;margin-bottom:8px;}
+    .mkp-chart{width:100%;display:block;}
+
+    .sig-list{display:flex;flex-direction:column;gap:6px;}
+    .sig-row{display:flex;gap:7px;align-items:flex-start;}
+    .sig-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+    .sig-title{font-size:10.5px;font-weight:600;color:var(--text);line-height:1.3;}
+    .sig-sub{font-size:9.5px;color:var(--text3);line-height:1.35;margin-top:1px;}
+
+    /* Copilot bar */
+    .mkp-copilot{padding:8px 12px;background:#080C14;display:flex;align-items:center;gap:8px;}
+    .mkp-clbl{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);white-space:nowrap;}
+    .mkp-input-mock{flex:1;height:24px;background:#0F1623;border:1px solid var(--border);border-radius:var(--r-sm);padding:0 9px;display:flex;align-items:center;font-size:10.5px;color:var(--text3);}
+    .mkp-ask{background:linear-gradient(135deg,var(--g2),var(--g3));color:#fff;border:none;border-radius:var(--r-sm);padding:4px 10px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+    /* ── SECTIONS ── */
+    .section{padding:52px max(40px,calc(50vw - 600px));border-top:1px solid var(--border);}
+    .section-eyebrow{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+    .eyebrow-dot{width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g3));flex-shrink:0;}
+    .section-h{font-size:clamp(22px,2.6vw,32px);font-weight:800;letter-spacing:-.025em;margin-bottom:6px;line-height:1.1;}
+    .section-sub{font-size:14px;color:var(--text2);margin-bottom:28px;max-width:440px;line-height:1.65;}
+
+    /* ── KPI CARDS ── */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 16px;transition:border-color .2s;}
+    .kpi-card:hover{border-color:var(--border2);}
+    .kpi-lbl{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+    .metric-val{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--text);margin-bottom:5px;transition:opacity .3s;}
+    .metric-val.loading{opacity:.12;}
+    .metric-val.g-num{background:linear-gradient(135deg,var(--g1),var(--g2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .metric-sub{font-size:11.5px;color:var(--text3);font-weight:500;}
+
+    /* ── DEPT TABLE ── */
+    .dept-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px;max-width:1100px;}
+    .dept-wrap-header{padding:13px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);}
+    .dept-table{width:100%;border-collapse:collapse;}
+    .dept-table th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:9px 20px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);}
+    .dept-table td{padding:11px 20px;font-size:12.5px;font-weight:500;color:var(--text2);border-bottom:1px solid var(--border);}
+    .dept-table tr:last-child td{border-bottom:none;}
+    .dept-table tr:hover td{background:rgba(255,255,255,.03);}
+    .dept-name{color:var(--text)!important;font-weight:600!important;}
+
+    .sig-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;}
+    .sig-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+    .sb-critical{background:rgba(248,113,113,.12);color:#F87171;}
+    .sb-high{background:rgba(251,146,60,.12);color:#FB923C;}
+    .sb-medium{background:rgba(251,191,36,.12);color:#FBBF24;}
+    .sb-low{background:rgba(52,211,153,.12);color:#34D399;}
+
+    .score-bar{display:inline-flex;align-items:center;gap:8px;}
+    .score-bar-bg{width:52px;height:4px;background:var(--border2);border-radius:99px;overflow:hidden;}
+    .score-bar-fill{height:100%;background:linear-gradient(90deg,var(--g2),var(--g3));border-radius:99px;}
+
+    .risk-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;}
+    .risk-high{background:rgba(248,113,113,.14);color:#F87171;}
+    .risk-med{background:rgba(251,191,36,.14);color:#FBBF24;}
+    .risk-low{background:rgba(52,211,153,.14);color:#34D399;}
+
+    /* ── EXEC CARD ── */
+    .exec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:26px 30px;position:relative;overflow:hidden;max-width:980px;}
+    .exec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));}
+    .exec-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .exec-date{font-size:12px;color:var(--text3);font-weight:500;}
+    .exec-headline{font-size:clamp(16px,1.8vw,20px);font-weight:700;line-height:1.45;letter-spacing:-.02em;color:var(--text);margin-bottom:18px;max-width:740px;}
+    .exec-ceo{font-size:13px;color:var(--text2);font-style:italic;line-height:1.7;margin-bottom:16px;padding-left:12px;border-left:2px solid var(--border2);}
+    .exec-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+    .exec-col-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+    .exec-recs{display:flex;flex-direction:column;gap:8px;}
+    .exec-rec{display:flex;gap:10px;font-size:12.5px;color:var(--text2);line-height:1.6;}
+    .exec-rec::before{content:'→';color:var(--g2);flex-shrink:0;font-weight:700;}
+
+    /* ── FOOTER ── */
+    footer{border-top:1px solid var(--border);padding:22px max(40px,calc(50vw - 600px));display:flex;align-items:center;justify-content:space-between;}
+    .footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--text);}
+    .footer-logo .logo-mark{width:18px;height:18px;border-radius:5px;}
+    .footer-copy{font-size:12px;color:var(--text3);}
+    .footer-stack{font-size:12px;color:var(--text4);}
+
+    /* ── SKELETONS / ERRORS ── */
+    .skel{display:inline-block;background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shim 1.5s infinite;border-radius:var(--r-sm);}
+    @keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+    .data-error{font-size:12px;color:var(--red);}
+
+    /* ── REVEAL ── */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;}
+    .reveal.on{opacity:1;transform:none;}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1100px){
+      .hero{grid-template-columns:1fr;padding:88px 32px 56px;max-width:100%;}
+      .section{padding:44px 32px;}
+      nav{padding:0 32px;}
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .mkp-kpis{grid-template-columns:repeat(2,1fr);}
+      .exec-cols{grid-template-columns:1fr;}
+      .mockup-wrap{max-width:100%;margin-left:0;}
+      footer{flex-direction:column;gap:10px;text-align:center;padding:20px 32px;}
+    }
+    @media(max-width:640px){
+      .hero-h1{font-size:36px;}
+      .nav-links{display:none;}
+      .mkp-panels{grid-template-columns:1fr;}
+      .kpi-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="8" width="5" height="14" rx="1.5" fill="url(#lp1n)"/>
+      <rect x="9.5" y="4" width="5" height="18" rx="1.5" fill="url(#lp2n)"/>
+      <rect x="17" y="11" width="5" height="11" rx="1.5" fill="url(#lp3n)"/>
+      <circle cx="19" cy="8" r="2" fill="#F59E0B"/>
+      <defs>
+        <linearGradient id="lp1n" x1="4.5" y1="8" x2="4.5" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+        <linearGradient id="lp2n" x1="12" y1="4" x2="12" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#6D28D9"/></linearGradient>
+        <linearGradient id="lp3n" x1="19.5" y1="11" x2="19.5" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+      </defs>
+    </svg>
+    Stance
+  </a>
+  <div class="nav-links">
+    <a href="#analytics" data-i18n="nav_intelligence">Intelligence</a>
+    <a href="#departments" data-i18n="nav_workforce">Workforce</a>
+    <a href="#exec" data-i18n="nav_briefing">Briefing</a>
+    <a href="#cta" data-i18n="nav_pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-switch">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <span class="lang-sep">|</span>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
+    <a href="/Stance%20Dashboard.html" class="nav-signin" data-i18n="signin">Sign In</a>
+    <a href="#cta" class="btn btn-dark">Book a Demo →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+
+  <!-- Left -->
+  <div>
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      <span data-i18n="badge">Executive Workforce Intelligence</span>
+    </div>
+    <h1 class="hero-h1" id="hero-h1">
+      The AI Copilot<br>
+      for <span class="g-text">Strategic</span><br>
+      <span class="g-text">HR Decisions.</span>
+    </h1>
+    <p class="hero-sub" data-i18n="sub">
+      Stance reads every workforce signal and returns the forecasts your leadership needs to act. Not a dashboard. A decision engine.
+    </p>
+    <div class="hero-ctas">
+      <a href="#cta" class="btn btn-primary" data-i18n="cta_primary">Try the demo →</a>
+      <a href="#analytics" class="hero-cta-secondary" data-i18n="cta_secondary">See Stance in Action →</a>
+    </div>
+  </div>
+
+  <!-- Right: Dashboard mockup -->
+  <div class="mockup-wrap">
+    <div class="mockup-card">
+
+      <!-- Browser chrome -->
+      <div class="chrome">
+        <div class="chrome-dots">
+          <div class="chrome-dot cd-r"></div>
+          <div class="chrome-dot cd-y"></div>
+          <div class="chrome-dot cd-g"></div>
+        </div>
+        <div class="chrome-url">
+          <span class="url-dot"></span>
+          stance.app / briefing
+        </div>
+      </div>
+
+      <!-- 4 KPI tiles -->
+      <div class="mkp-kpis">
+        <div class="mkp-kpi">
+          <div class="mkp-kpi-lbl">Employees</div>
+          <div class="mkp-kpi-val" id="hero-total">—</div>
+          <div class="mkp-kpi-trend" id="hero-total-t">loading…</div>
+        </div>
+        <div class="mkp-kpi">
+          <div class="mkp-kpi-lbl">Attrition Rate</div>
+          <div class="mkp-kpi-val" id="hero-attr">—</div>
+          <div class="mkp-kpi-trend t-up" id="hero-attr-t">loading…</div>
+        </div>
+        <div class="mkp-kpi">
+          <div class="mkp-kpi-lbl">At Risk</div>
+          <div class="mkp-kpi-val" id="hero-atrisk">—</div>
+          <div class="mkp-kpi-trend t-up" id="hero-atrisk-t">loading…</div>
+        </div>
+        <div class="mkp-kpi">
+          <div class="mkp-kpi-lbl">Avg Risk Score</div>
+          <div class="mkp-kpi-val" id="hero-avgrisk">—</div>
+          <div class="mkp-kpi-trend" id="hero-avgrisk-t">/ 100</div>
+        </div>
+      </div>
+
+      <!-- Two panels -->
+      <div class="mkp-panels">
+
+        <!-- Left: chart -->
+        <div class="mkp-panel">
+          <div class="mkp-plbl">ATTRITION RISK →</div>
+          <div class="mkp-big g-text" id="hero-risk-num">—</div>
+          <div class="mkp-desc" id="hero-risk-desc">Analysing workforce stability…</div>
+          <svg class="mkp-chart" viewBox="0 0 230 68" fill="none" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ca" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#7C3AED" stop-opacity=".35"/>
+                <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="cl" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#A78BFA"/>
+                <stop offset="100%" stop-color="#6D28D9"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,56 C28,52 56,44 84,34 C112,24 140,18 168,14 C192,11 212,12 230,11 L230,68 L0,68 Z" fill="url(#ca)"/>
+            <path d="M0,56 C28,52 56,44 84,34 C112,24 140,18 168,14 C192,11 212,12 230,11" stroke="url(#cl)" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+
+        <!-- Right: AI signals -->
+        <div class="mkp-panel">
+          <div class="mkp-plbl">AI SIGNAL</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;">Today's Intelligence</div>
+          <div class="sig-list" id="hero-signals">
+            <div class="sig-row">
+              <div class="sig-dot" style="background:var(--red)"></div>
+              <div><div class="sig-title">Loading signals…</div><div class="sig-sub">Fetching workforce data</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copilot bar -->
+      <div class="mkp-copilot">
+        <span class="mkp-clbl">Ask Stance</span>
+        <div class="mkp-input-mock">Why is attrition rising in E…</div>
+        <button class="mkp-ask">Ask</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- LIVE ANALYTICS -->
+<section class="section reveal" id="analytics">
+  <div class="section-eyebrow"><span class="eyebrow-dot"></span>Live Workforce Intelligence</div>
+  <h2 class="section-h">Real metrics, real time.</h2>
+  <p class="section-sub">Pulled live from your HRIS — every figure reflects the current state of your workforce.</p>
+
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-lbl">Total Employees</div>
+      <div class="metric-val loading" id="kpi-total-emp">—</div>
+      <div class="metric-sub" id="kpi-total-emp-sub">loading…</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Avg Risk Score</div>
+      <div class="metric-val loading g-num" id="kpi-avg-perf">—</div>
+      <div class="metric-sub" id="kpi-avg-perf-sub">loading…</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">High / Critical Risk</div>
+      <div class="metric-val loading" id="kpi-flight-risk">—</div>
+      <div class="metric-sub" id="kpi-flight-risk-sub">loading…</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Avg Attrition Rate</div>
+      <div class="metric-val loading" id="kpi-attrition">—</div>
+      <div class="metric-sub" id="kpi-attrition-sub">across departments</div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFORCE INTELLIGENCE -->
+<section class="section reveal" id="departments">
+  <div class="section-eyebrow"><span class="eyebrow-dot"></span>Workforce Intelligence</div>
+  <h2 class="section-h">Every team, in focus.</h2>
+  <p class="section-sub">Risk signals and attrition patterns broken down by department — ranked, sourced, and ready to act on.</p>
+
+  <div class="dept-wrap">
+    <div class="dept-wrap-header">Department Intelligence</div>
+    <div id="dept-table-wrap">
+      <div style="padding:20px 22px;">
+        <span class="skel" style="width:100%;height:40px;display:block;margin-bottom:8px;"></span>
+        <span class="skel" style="width:100%;height:40px;display:block;margin-bottom:8px;"></span>
+        <span class="skel" style="width:75%;height:40px;display:block;"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXECUTIVE BRIEFING -->
+<section class="section reveal" id="exec">
+  <div class="section-eyebrow"><span class="eyebrow-dot"></span>Executive Briefing</div>
+  <h2 class="section-h">Board-ready intelligence.</h2>
+  <p class="section-sub">AI-generated strategic briefing from your Stance intelligence layer, refreshed automatically from live data.</p>
+
+  <div class="exec-card" id="exec-card">
+    <div class="exec-meta">
+      <div id="exec-date" class="exec-date"><span class="skel" style="width:130px;height:12px;"></span></div>
+    </div>
+    <div id="exec-headline" class="exec-headline">
+      <span class="skel" style="width:68%;height:20px;display:block;margin-bottom:8px;"></span>
+      <span class="skel" style="width:42%;height:20px;display:block;"></span>
+    </div>
+    <div id="exec-recs" class="exec-recs"></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" id="cta" style="text-align:center;">
+  <div class="section-eyebrow" style="justify-content:center;"><span class="eyebrow-dot"></span>Get Started</div>
+  <h2 class="section-h" style="max-width:480px;margin:0 auto 14px;">Deploy in days, not months.</h2>
+  <p class="section-sub" style="margin:0 auto 36px;text-align:center;">Built on Airtable, Make, and Claude. Full data ownership — no black-box contracts.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <a href="mailto:hello@stance.app" class="btn btn-primary">Book a Demo →</a>
+    <a href="/Stance%20Dashboard.html" class="btn btn-dark">Open the Dashboard</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="8" width="5" height="14" rx="1.5" fill="url(#lp1f)"/>
+      <rect x="9.5" y="4" width="5" height="18" rx="1.5" fill="url(#lp2f)"/>
+      <rect x="17" y="11" width="5" height="11" rx="1.5" fill="url(#lp3f)"/>
+      <circle cx="19" cy="8" r="2" fill="#F59E0B"/>
+      <defs>
+        <linearGradient id="lp1f" x1="4.5" y1="8" x2="4.5" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+        <linearGradient id="lp2f" x1="12" y1="4" x2="12" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#6D28D9"/></linearGradient>
+        <linearGradient id="lp3f" x1="19.5" y1="11" x2="19.5" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#A78BFA"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>
+      </defs>
+    </svg>
+    Stance
+  </div>
+  <div class="footer-copy">© 2026 Stance. All rights reserved.</div>
+  <div class="footer-stack">Airtable · Make · Claude Sonnet 4.6</div>
+</footer>
+
+<script>
+  // Nav
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('stuck', window.scrollY > 20), { passive: true });
+
+  // Reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ── Airtable layer (unchanged) ─────────────────────────────────────────────
+  async function getEmployees() {
+    const res = await fetch('/api/employees');
+    if (!res.ok) throw new Error(`Employees API error ${res.status}`);
+    return res.json();
+  }
+  async function getDepartmentRollups() {
+    const res = await fetch('/api/departments');
+    if (!res.ok) throw new Error(`Departments API error ${res.status}`);
+    return res.json();
+  }
+  async function getExecutiveSummary() {
+    const res = await fetch('/api/summary');
+    if (!res.ok) throw new Error(`Summary API error ${res.status}`);
+    return res.json();
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function getField(record, ...candidates) {
+    for (const key of candidates) {
+      const val = record[key];
+      if (val !== undefined && val !== null && val !== '') return val;
+    }
+    return null;
+  }
+  function num(val) { const n = parseFloat(val); return isNaN(n) ? null : n; }
+
+  function setMetric(id, value, sub) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = value; el.classList.remove('loading'); }
+    const subEl = document.getElementById(id + '-sub');
+    if (subEl && sub !== undefined) subEl.textContent = sub;
+  }
+
+  function signalBadge(level) {
+    if (!level) return '<span style="color:var(--text3)">—</span>';
+    const l = String(level).toLowerCase();
+    if (l === 'critical') return `<span class="sig-badge sb-critical">Critical</span>`;
+    if (l === 'high')     return `<span class="sig-badge sb-high">High</span>`;
+    if (l === 'medium')   return `<span class="sig-badge sb-medium">Medium</span>`;
+    if (l === 'low')      return `<span class="sig-badge sb-low">Low</span>`;
+    return `<span class="sig-badge sb-medium">${level}</span>`;
+  }
+
+  function riskBadge(score) {
+    if (score === null) return '<span style="color:var(--text3)">—</span>';
+    if (score >= 70) return `<span class="risk-badge risk-high">${score}</span>`;
+    if (score >= 40) return `<span class="risk-badge risk-med">${score}</span>`;
+    return `<span class="risk-badge risk-low">${score}</span>`;
+  }
+
+  function scoreBar(score) {
+    if (score === null) return '<span style="color:var(--text3)">—</span>';
+    const pct = Math.min(100, Math.max(0, score));
+    return `<span class="score-bar">${score}<span class="score-bar-bg"><span class="score-bar-fill" style="width:${pct}%"></span></span></span>`;
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  async function loadEmployeeKPIs() {
+    try {
+      const employees = await getEmployees();
+      const total = employees.length;
+      const riskScores = employees.map(e => num(e['Risk Score'])).filter(v => v !== null);
+      const avgRisk = riskScores.length
+        ? (riskScores.reduce((a, b) => a + b, 0) / riskScores.length).toFixed(1) : null;
+      const atRisk = employees.filter(e => {
+        const l = String(e['Risk Level'] || '').toLowerCase();
+        return l === 'high' || l === 'critical';
+      });
+
+      setMetric('kpi-total-emp', total, 'across all departments');
+      setMetric('kpi-avg-perf',
+        avgRisk !== null ? avgRisk : '—',
+        avgRisk !== null ? `out of 100 — ${riskScores.length} analysed` : 'no risk data');
+      setMetric('kpi-flight-risk', atRisk.length,
+        `employee${atRisk.length !== 1 ? 's' : ''} at high or critical risk`);
+
+      // Hero mockup
+      const ht = document.getElementById('hero-total');
+      if (ht) ht.textContent = total.toLocaleString();
+      const htt = document.getElementById('hero-total-t');
+      if (htt) { htt.textContent = 'active employees'; htt.className = 'mkp-kpi-trend'; }
+
+      const har = document.getElementById('hero-atrisk');
+      if (har) har.textContent = atRisk.length;
+      const hart = document.getElementById('hero-atrisk-t');
+      if (hart) {
+        const pct = total > 0 ? ((atRisk.length / total) * 100).toFixed(1) : 0;
+        hart.textContent = `↑ ${pct}% of workforce`;
+        hart.className = `mkp-kpi-trend ${atRisk.length > 3 ? 't-up' : ''}`;
+      }
+
+      const hav = document.getElementById('hero-avgrisk');
+      if (hav) hav.textContent = avgRisk !== null ? avgRisk : '—';
+
+      const hrn = document.getElementById('hero-risk-num');
+      if (hrn) hrn.textContent = atRisk.length;
+      const hrd = document.getElementById('hero-risk-desc');
+      if (hrd) hrd.textContent = atRisk.length === 0
+        ? 'Workforce stability is strong'
+        : atRisk.length <= 3 ? 'Workforce stability is improving'
+        : 'Workforce requires attention';
+
+    } catch (err) {
+      ['kpi-total-emp', 'kpi-avg-perf', 'kpi-flight-risk'].forEach(id => {
+        setMetric(id, '—', '');
+        const sub = document.getElementById(id + '-sub');
+        if (sub) sub.innerHTML = `<span class="data-error">${err.message}</span>`;
+      });
+    }
+  }
+
+  // ── Departments ────────────────────────────────────────────────────────────
+  async function loadDepartments() {
+    const wrap = document.getElementById('dept-table-wrap');
+    try {
+      const departments = await getDepartmentRollups();
+
+      if (!departments.length) {
+        wrap.innerHTML = '<p style="padding:18px 22px;font-size:13px;color:var(--text3);">No department data found.</p>';
+        return;
+      }
+
+      // Avg attrition for KPI card
+      const rates = departments.map(d => num(d['Attrition Rate'])).filter(v => v !== null);
+      if (rates.length) {
+        const avg = rates.reduce((a, b) => a + b, 0) / rates.length;
+        const display = avg <= 1 ? (avg * 100).toFixed(1) + '%' : avg.toFixed(1) + '%';
+        setMetric('kpi-attrition', display, `avg across ${rates.length} departments`);
+        const ha = document.getElementById('hero-attr');
+        if (ha) ha.textContent = display;
+        const hat = document.getElementById('hero-attr-t');
+        if (hat) { hat.textContent = '↑ vs last quarter'; hat.className = 'mkp-kpi-trend t-up'; }
+      }
+
+      const rows = departments.map(d => {
+        const name     = d['department'] || '—';
+        const hc       = d['headcount'] ?? '—';
+        const attrRaw  = d['Attrition Rate'] != null ? d['Attrition Rate'] : null;
+        const avgRisk  = num(d['Avg Risk Score']);
+        const critical = d['Critical Count'] ?? 0;
+        const signal   = d['signal_level'] || null;
+        const attrDisp = attrRaw !== null
+          ? `${(parseFloat(attrRaw) * (attrRaw <= 1 ? 100 : 1)).toFixed(1)}%` : '—';
+        return `<tr>
+          <td class="dept-name">${name}</td>
+          <td>${hc}</td>
+          <td>${scoreBar(avgRisk)}</td>
+          <td>${critical > 0 ? `<span class="risk-badge risk-high">${critical}</span>` : '<span style="color:var(--text3)">0</span>'}</td>
+          <td>${attrDisp}</td>
+          <td>${signalBadge(signal)}</td>
+        </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `<table class="dept-table">
+        <thead><tr>
+          <th>Department</th><th>Headcount</th><th>Avg Risk Score</th>
+          <th>Critical Count</th><th>Attrition Rate</th><th>Signal Level</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+      // Hero signals from top-risk departments
+      const sigEl = document.getElementById('hero-signals');
+      if (sigEl) {
+        const sigColors = { critical: '#F87171', high: '#FB923C', medium: '#FBBF24', low: '#34D399' };
+        const risky = departments
+          .filter(d => ['critical','high','medium'].includes(String(d['signal_level']||'').toLowerCase()))
+          .slice(0, 3);
+        if (risky.length) {
+          sigEl.innerHTML = risky.map(d => {
+            const sig = String(d['signal_level'] || 'medium').toLowerCase();
+            const col = sigColors[sig] || '#9CA3AF';
+            const r = num(d['Avg Risk Score']);
+            return `<div class="sig-row">
+              <div class="sig-dot" style="background:${col}"></div>
+              <div>
+                <div class="sig-title">${d['signal_level'] || 'Signal'} · ${d['department'] || '—'}</div>
+                <div class="sig-sub">Risk: ${r !== null ? Math.round(r) : '—'} · ${d['headcount'] ?? '—'} employees</div>
+              </div>
+            </div>`;
+          }).join('');
+        }
+      }
+
+    } catch (err) {
+      wrap.innerHTML = `<div style="padding:18px 22px;" class="data-error">Could not load department data: ${err.message}</div>`;
+    }
+  }
+
+  // ── Executive summary ──────────────────────────────────────────────────────
+  function splitLines(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
+    return String(val).split(/\n|•|–/).map(s => s.trim()).filter(Boolean);
+  }
+
+  async function loadExecutiveSummary() {
+    const dateEl     = document.getElementById('exec-date');
+    const headlineEl = document.getElementById('exec-headline');
+    const recsEl     = document.getElementById('exec-recs');
+    try {
+      const summary = await getExecutiveSummary();
+      if (!summary) {
+        headlineEl.textContent = 'No executive briefing available yet.';
+        dateEl.textContent = '';
+        recsEl.innerHTML = '';
+        return;
+      }
+
+      const refreshed     = summary['last_refreshed'];
+      const headline      = summary['headline'];
+      const overallSignal = summary['overall_signal'];
+      const topPriorities = summary['top_priorities'];
+      const quickWins     = summary['quick_wins'];
+      const ceoMessage    = summary['ceo_message'];
+
+      if (refreshed) {
+        const d = new Date(refreshed);
+        dateEl.textContent = `Updated ${isNaN(d) ? refreshed : d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
+      } else {
+        dateEl.textContent = '';
+      }
+
+      // Add signal badge
+      if (overallSignal) {
+        const meta = document.querySelector('.exec-meta');
+        if (meta && !document.getElementById('exec-sig-badge')) {
+          const span = document.createElement('span');
+          span.id = 'exec-sig-badge';
+          span.innerHTML = signalBadge(overallSignal);
+          meta.appendChild(span);
+        }
+      }
+
+      headlineEl.textContent = headline || 'No headline available.';
+
+      let html = '';
+      if (ceoMessage) {
+        html += `<div class="exec-ceo">${ceoMessage}</div>`;
+      }
+
+      const priorities = splitLines(topPriorities);
+      const wins = splitLines(quickWins);
+      if (priorities.length || wins.length) {
+        html += '<div class="exec-cols">';
+        if (priorities.length) {
+          html += `<div><div class="exec-col-lbl">Top Priorities</div><div class="exec-recs">${priorities.map(l => `<div class="exec-rec">${l}</div>`).join('')}</div></div>`;
+        }
+        if (wins.length) {
+          html += `<div><div class="exec-col-lbl">Quick Wins</div><div class="exec-recs">${wins.map(l => `<div class="exec-rec">${l}</div>`).join('')}</div></div>`;
+        }
+        html += '</div>';
+      }
+      recsEl.innerHTML = html;
+
+    } catch (err) {
+      headlineEl.innerHTML = `<span class="data-error">Could not load executive briefing: ${err.message}</span>`;
+      dateEl.textContent = '';
+    }
+  }
+
+  // ── i18n ──────────────────────────────────────────────────────────────────
+  const i18n = {
+    en: {
+      badge: 'Executive Workforce Intelligence',
+      h1: 'The AI Copilot<br>for <span class="g-text">Strategic</span><br><span class="g-text">HR Decisions.</span>',
+      sub: 'Stance reads every workforce signal and returns the forecasts your leadership needs to act. Not a dashboard. A decision engine.',
+      cta_primary: 'Try the demo →',
+      cta_secondary: 'See Stance in Action →',
+      nav_intelligence: 'Intelligence',
+      nav_workforce: 'Workforce',
+      nav_briefing: 'Briefing',
+      nav_pricing: 'Pricing',
+      signin: 'Sign In'
+    },
+    fr: {
+      badge: 'Intelligence RH Executive',
+      h1: 'Le Copilote IA<br>pour les <span class="g-text">Décisions</span><br><span class="g-text">RH Stratégiques.</span>',
+      sub: 'Stance lit chaque signal RH et retourne les prévisions dont votre direction a besoin pour décider. Pas un tableau de bord. Un moteur de décision.',
+      cta_primary: 'Voir la démo →',
+      cta_secondary: 'Découvrir Stance →',
+      nav_intelligence: 'Intelligence',
+      nav_workforce: 'Effectifs',
+      nav_briefing: 'Briefing',
+      nav_pricing: 'Tarifs',
+      signin: 'Connexion'
+    }
+  };
+
+  let currentLang = 'en';
+
+  function switchLang(lang) {
+    currentLang = lang;
+    const t = i18n[lang] || i18n.en;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+    const h1 = document.getElementById('hero-h1');
+    if (h1) h1.innerHTML = t.h1;
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    document.documentElement.lang = lang;
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchLang(btn.getAttribute('data-lang')));
+  });
+
+  // ── Bootstrap ──────────────────────────────────────────────────────────────
+  loadEmployeeKPIs();
+  loadDepartments();
+  loadExecutiveSummary();
+</script>
+</body>
+</html>

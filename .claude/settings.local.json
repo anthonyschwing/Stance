@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Copy-Item *)",
+      "Skill(run)",
+      "PowerShell(python --version 2>&1; node --version 2>&1)",
+      "PowerShell(Start-Process \"http://localhost:3000/stance_landing.html\")",
+      "Bash(python --version)",
+      "Bash(python3 --version)",
+      "Bash(node --version)",
+      "Bash(node -e \"const h=require\\('http'\\),fs=require\\('fs'\\),path=require\\('path'\\);const m={'html':'text/html','css':'text/css','js':'application/javascript','jsx':'application/javascript','png':'image/png','jpg':'image/jpeg','svg':'image/svg+xml','ico':'image/x-icon','woff2':'font/woff2'};h.createServer\\(\\(req,res\\)=>{let f=path.join\\('.',decodeURIComponent\\(req.url.split\\('?'\\)[0]\\)\\);if\\(f.endsWith\\('/'\\)||f==='.'\\)f=path.join\\(f,'Humind Landing.html'\\);const ext=path.extname\\(f\\).slice\\(1\\);try{const d=fs.readFileSync\\(f\\);res.writeHead\\(200,{'Content-Type':m[ext]||'text/plain','Access-Control-Allow-Origin':'*'}\\);res.end\\(d\\);}catch\\(e\\){res.writeHead\\(404\\);res.end\\('Not found: '+f\\);}}\\).listen\\(3000,\\(\\)=>console.log\\('Humind server: http://localhost:3000'\\)\\);\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/Humind%20Dashboard.html\" -UseBasicParsing | Select-Object StatusCode, @{n='ContentLength';e={$_.Content.Length}})",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/ask\" -Method POST -ContentType \"application/json\" -Body '{\"question\":\"test connection\"}' -TimeoutSec 30 | ConvertTo-Json)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/ask\" -Method POST -ContentType \"application/json\" -Body '{\"question\":\"test connection\"}' -TimeoutSec 60 | ConvertTo-Json -Depth 5)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/ask\" -Method POST -ContentType \"application/json\" -Body '{\"question\":\"Why is attrition rising in EMEA Sales?\"}' -TimeoutSec 60 | ConvertTo-Json -Depth 5)",
+      "PowerShell(Start-Sleep -Seconds 2; Invoke-RestMethod -Uri \"http://localhost:3000/api/ask\" -Method POST -ContentType \"application/json\" -Body '{\"question\":\"Why is attrition rising in EMEA Sales?\"}' -TimeoutSec 60 | ConvertTo-Json -Depth 5)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/ask\" -Method POST -ContentType \"application/json\" -Body '{\"question\":\"What are the main attrition risk factors across departments?\"}' -TimeoutSec 60 | ConvertTo-Json -Depth 5)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/departments\" -TimeoutSec 30 | ConvertTo-Json -Depth 5)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/employees\" -TimeoutSec 30 | ConvertTo-Json -Depth 3 | Select-Object -First 100)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/upload\" -Method POST -ContentType \"application/json\" -Body '{\"csv_data\": \"Age,Department,JobRole,Attrition\\\\n31,Sales,Manager,No\\\\n45,R&D,Scientist,Yes\", \"filename\": \"test.csv\"}' -TimeoutSec 30 | ConvertTo-Json)",
+      "Bash(node *)",
+      "PowerShell(Start-Process \"http://localhost:3000\")",
+      "PowerShell(Start-Process \"http://localhost:3000/dashboard\")",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/health\" -Method Get | ConvertTo-Json)"
+    ]
+  }
+}

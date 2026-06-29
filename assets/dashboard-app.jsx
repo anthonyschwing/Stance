@@ -1,0 +1,527 @@
+/* HUMIND dashboard — app shell */
+const { useState: uState, useEffect: uEffect, useRef: uRef } = React;
+
+/* **bold** + newline renderer */
+function md(text) {
+  return text.split('\n').flatMap((line, li, arr) => {
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    const spans = parts.map((p, i) => p.startsWith('**') && p.endsWith('**') ?
+      <b key={`${li}.${i}`}>{p.slice(2, -2)}</b> : <span key={`${li}.${i}`}>{p}</span>);
+    return li < arr.length - 1 ? [...spans, <br key={`br${li}`} />] : spans;
+  });
+}
+
+/* Format structured Claude response from Make */
+function formatStanceResponse(data) {
+  const { summary, risk_level, recommendations, confidence_score } = data;
+  const parts = [];
+  if (summary) parts.push(summary);
+  const meta = [];
+  if (risk_level) meta.push(`**Risk:** ${risk_level}`);
+  if (confidence_score != null) meta.push(`**Confidence:** ${confidence_score}%`);
+  if (meta.length) parts.push(meta.join(' · '));
+  if (recommendations && recommendations.length) {
+    parts.push('**Recommendations**\n' + recommendations.map(r => `· ${r}`).join('\n'));
+  }
+  return parts.join('\n\n');
+}
+
+const NAV = [
+{ id: 'overview',  label: 'Executive Briefing',   group: 'Analytics' },
+{ id: 'attrition', label: 'Analytics Hub',         group: 'Analytics' },
+{ id: 'engagement',label: 'Workforce Pulse',       group: 'Analytics', badge: '10' },
+{ id: 'retention', label: 'Risk Intelligence',     group: 'Analytics' },
+{ id: 'employee',  label: 'Employee Intelligence', group: 'People' },
+{ id: 'heatmaps',  label: 'Pipelines',             group: 'Workspace' },
+{ id: 'insights',  label: 'Saved Reports',         group: 'Workspace' },
+{ id: 'reports',   label: 'Config',                group: 'Workspace', badge: '3' }];
+
+const TITLES = {
+  overview: 'Executive Briefing', attrition: 'Analytics Hub', engagement: 'Workforce Pulse',
+  retention: 'Risk Intelligence', employee: 'Employee Intelligence', heatmaps: 'Pipelines', insights: 'Saved Reports', reports: 'Config'
+};
+function navIcon(id) {
+  const m = {
+    overview: <><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="3" width="8" height="5" rx="2" /><rect x="13" y="10" width="8" height="11" rx="2" /><rect x="3" y="13" width="8" height="8" rx="2" /></>,
+    attrition: <><path d="M3 3v18h18" /><path d="M7 14l4-4 3 3 5-6" /></>,
+    engagement: <><path d="M20 21a8 8 0 1 0-16 0" /><circle cx="12" cy="7" r="4" /></>,
+    retention: <><path d="M3 12a9 9 0 1 0 9-9" /><path d="M12 7v5l3 2" /></>,
+    employee: <><circle cx="12" cy="12" r="9" /><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" /></>,
+    heatmaps: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></>,
+    insights: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /></>,
+    reports: <><path d="M6 3h9l4 4v14H6z" /><path d="M9 12h6M9 16h6" /></>
+  };
+  return <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{m[id]}</svg>;
+}
+
+/* ---------------- Language switcher ---------------- */
+function LangSwitch() {
+  const normalize = (v) => (String(v?.lang || v || 'EN')).toUpperCase();
+  const [lang, setLangState] = uState(normalize(window.StanceI18N ? window.StanceI18N.getLang() : 'EN'));
+  uEffect(() => {
+    const h = (e) => setLangState(normalize(e.detail));
+    window.addEventListener('stance:lang', h);
+    return () => window.removeEventListener('stance:lang', h);
+  }, []);
+  const pick = (l) => { if (window.StanceI18N) window.StanceI18N.setLang(l); else setLangState(l.toUpperCase()); };
+  return (
+    <div className="lang-switch" role="group" aria-label="Language / Langue">
+      <button type="button" data-lang="en" className={'lang-opt' + (lang === 'EN' ? ' on' : '')} aria-pressed={lang === 'EN'} onClick={() => pick('EN')}>EN</button>
+      <span className="lang-div" aria-hidden="true">|</span>
+      <button type="button" data-lang="fr" className={'lang-opt' + (lang === 'FR' ? ' on' : '')} aria-pressed={lang === 'FR'} onClick={() => pick('FR')}>FR</button>
+    </div>
+  );
+}
+
+/* ---------------- Upload modal ---------------- */
+const UPLOAD_STEPS = [['d.up.s0', 'Parsing 12,480 rows'], ['d.up.s1', 'Mapping fields & cleaning'], ['d.up.s2', 'Clustering cohorts'], ['d.up.s3', 'Scoring attrition risk'], ['d.up.s4', 'Generating insights']];
+function UploadModal({ onClose, onDone }) {
+  const [phase, setPhase] = uState('drop');
+  const [step, setStep] = uState(-1);
+  const [drag, setDrag] = uState(false);
+  const fileRef = uRef(null);
+
+  async function start(file) {
+    setPhase('run'); setStep(0);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csv_data: e.target.result, filename: file.name })
+          });
+        } catch (_) {}
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  uEffect(() => {
+    if (phase !== 'run') return;
+    if (step >= UPLOAD_STEPS.length) {setPhase('done');setTimeout(onDone, 700);return;}
+    const t = setTimeout(() => setStep((s) => s + 1), 720);
+    return () => clearTimeout(t);
+  }, [phase, step]);
+
+  const pct = phase === 'done' ? 100 : Math.max(0, Math.round(step / UPLOAD_STEPS.length * 100));
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-top">
+          <h3>{phase === 'done' ? window.T('d.up.done', 'Analysis complete') : window.T('d.up.title', 'Import workforce data')}</h3>
+          <button className="modal-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {phase === 'drop' &&
+          <>
+              <input ref={fileRef} type="file" accept=".csv" style={{display:'none'}}
+                onChange={(e) => { const f = e.target.files[0]; if (f) start(f); }} />
+              <div className={'drop' + (drag ? ' drag' : '')} onClick={() => fileRef.current && fileRef.current.click()}
+            onDragOver={(e) => {e.preventDefault();setDrag(true);}}
+            onDragLeave={() => setDrag(false)}
+            onDrop={(e) => {e.preventDefault();setDrag(false);const f=e.dataTransfer.files[0];if(f)start(f);}}>
+                <div className="di"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg></div>
+                <h4>{window.T('d.up.drop', 'Drop your HR CSV here')}</h4>
+                <p>{window.T('d.up.browse', 'or click to browse — Stance maps & analyzes automatically')}</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span className="chip">employees.csv</span><span className="chip">Workday export</span><span className="chip">BambooHR</span><span className="chip">SAP SuccessFactors</span>
+              </div>
+            </>
+          }
+          {phase !== 'drop' &&
+          <>
+              <div className="prog"><i style={{ width: pct + '%' }}></i></div>
+              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-3)', textAlign: 'right', marginBottom: 8 }}>{pct}%</div>
+              <div className="steps-run">
+                {UPLOAD_STEPS.map((s, i) => {
+                const state = phase === 'done' || i < step ? 'done' : i === step ? 'active' : '';
+                return (
+                  <div className={'srow ' + state} key={i}>
+                      <span className="si">{state === 'done' ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg> : state === 'active' ? <span className="spin"></span> : ''}</span>
+                      {window.T(s[0], s[1])}
+                    </div>);
+
+              })}
+              </div>
+            </>
+          }
+        </div>
+      </div>
+    </div>);
+
+}
+
+/* ---------------- Summary modal ---------------- */
+function SummaryModal({ s, onClose }) {
+  const lines = s.lines && s.lines.length ? s.lines : [
+  ['01', 'Risk concentrated in two units', 'EMEA Sales & Platform Engineering.'],
+  ['02', 'Drivers are explainable', 'Compensation 42% · workload 18%.'],
+  ['03', 'Recommended action protects ~€1.4M', 'Over the next two quarters.']];
+
+  function exportPDF() {
+    const w = window.open('', '_blank');
+    const base = window.location.origin;
+    const linesHTML = lines.map(l =>
+      `<div class="line"><span class="num">${l[0]}</span><div><div class="title">${l[1]}</div><div class="sub">${l[2]}</div></div></div>`
+    ).join('');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${s.title || 'Stance Executive Briefing'}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Manrope',sans-serif;background:#fff;color:#0B0F19;padding:56px 64px;max-width:820px;margin:0 auto;}
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:48px;}
+  .logo img{width:32px;height:32px;object-fit:contain;}
+  .logo-name{font-family:'Sora',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.02em;color:#0B0F19;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#7C3AED;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:99px;padding:4px 12px;margin-bottom:20px;}
+  h1{font-family:'Sora',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px;}
+  .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:40px;}
+  .line{display:flex;gap:20px;align-items:flex-start;padding:20px 0;border-bottom:1px solid #F3F4F6;}
+  .line:last-child{border-bottom:none;}
+  .num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#7C3AED;min-width:28px;padding-top:2px;}
+  .title{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:#0B0F19;margin-bottom:4px;}
+  .sub{font-size:13px;color:#6B7280;line-height:1.5;}
+  .footer{margin-top:48px;padding-top:20px;border-top:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center;}
+  .footer-brand{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9CA3AF;letter-spacing:.06em;}
+  @media print{body{padding:40px 48px;}@page{margin:0;size:A4;}}
+</style></head><body>
+<div class="logo"><img src="${base}/assets/humind-symbol.png" alt="Stance"><span class="logo-name">Stance</span></div>
+<div class="badge">AI-generated · ${s.date || new Date().toLocaleDateString('en-GB', {month:'short',year:'numeric'})}</div>
+<h1>${s.head || s.title || 'Executive Workforce Briefing'}</h1>
+<div class="meta">PREPARED FOR ${(s.for || 'Executive Leadership').toUpperCase()} · ${window.T('d.sum.emp','12,480 EMPLOYEES')}</div>
+<div class="lines">${linesHTML}</div>
+<div class="footer">
+  <span class="footer-brand">STANCE · EXECUTIVE WORKFORCE INTELLIGENCE</span>
+  <span class="footer-brand">stance.app</span>
+</div>
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`);
+    w.document.close();
+  }
+
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ width: 'min(620px,94vw)' }}>
+        <div className="modal-top">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="mark" style={{ width: 24, height: 24, borderRadius: 7, display: 'inline-block' }}></span><h3>{s.title}</h3></div>
+          <button className="modal-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <span className="chip cyan">{window.T('d.sum.ai', 'AI-generated')} · {s.date}</span>
+          <h4 style={{ fontFamily: 'var(--f-display)', fontSize: 22, margin: '14px 0 6px' }}>{s.head}</h4>
+          <div className="ed-sub" style={{ fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--text-3)', marginBottom: 6 }}>{window.T('d.sum.for', 'PREPARED FOR')} {s.for.toUpperCase()} · {window.T('d.sum.emp', '12,480 EMPLOYEES')}</div>
+          {lines.map((l, i) =>
+          <div className="exec-line" key={i}><span className="en">{l[0]}</span><div><div className="et">{l[1]}</div><div className="es">{l[2]}</div></div></div>
+          )}
+          <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+            <button className="btn btn-primary btn-sm" onClick={exportPDF}>{window.T('d.sum.export', 'Export PDF')}</button>
+            <button className="btn btn-ghost btn-sm" onClick={onClose}>{window.T('d.sum.close', 'Close')}</button>
+          </div>
+        </div>
+      </div>
+    </div>);
+
+}
+
+/* ---------------- Copilot dock ---------------- */
+const SUGGEST = [['d.cop.s1', 'Why is attrition rising in EMEA Sales?'], ['d.cop.s2', 'Forecast retention next quarter'], ['d.cop.s3', 'Where is burnout risk highest?'], ['d.cop.s4', 'Draft the board summary']];
+function Copilot({ onClose }) {
+  const [msgs, setMsgs] = uState([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }]);
+  const [val, setVal] = uState('');
+  const [typing, setTyping] = uState(false);
+  const endRef = uRef(null);
+  uEffect(() => {if (endRef.current) endRef.current.scrollTop = endRef.current.scrollHeight;}, [msgs, typing]);
+
+  async function send(q) {
+    const text = (q || val).trim();
+    if (!text) return;
+    setMsgs((m) => [...m, { role: 'u', text }]);
+    setVal('');
+    setTyping(true);
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 60000);
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      setTyping(false);
+      if (!res.ok || data.error) {
+        setMsgs((m) => [...m, { role: 'a', text: window.HUMIND.answer(text) }]);
+        return;
+      }
+      const reply = data.summary ? formatStanceResponse(data) : window.HUMIND.answer(text);
+      setMsgs((m) => [...m, { role: 'a', text: reply }]);
+    } catch (_) {
+      setTyping(false);
+      setMsgs((m) => [...m, { role: 'a', text: window.HUMIND.answer(text) }]);
+    }
+  }
+  return (
+    <div className="cop-panel">
+      <div className="cop-head">
+        <span className="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg></span>
+        <div style={{ flex: 1 }}><b>Stance Copilot</b><br /><span>{window.T('d.cop.sub', 'Reading 12,480 employee records')}</span></div>
+        <button className="modal-x" onClick={onClose}>✕</button>
+      </div>
+      <div className="cop-msgs" ref={endRef}>
+        {msgs.map((m, i) =>
+        <div className={'msg ' + m.role} key={i}>
+            {m.role === 'a' && <div className="mh">Stance</div>}
+            {m.role === 'a' ? md(m.text) : m.text}
+          </div>
+        )}
+        {typing && <div className="msg a"><div className="mh">Stance</div><span className="typing"><i></i><i></i><i></i></span></div>}
+      </div>
+      <div className="cop-sugg">
+        {SUGGEST.map((s, i) => <button key={i} onClick={() => send(window.T(s[0], s[1]))}>{window.T(s[0], s[1])}</button>)}
+      </div>
+      <form className="cop-input" onSubmit={(e) => {e.preventDefault();send();}}>
+        <input value={val} onChange={(e) => setVal(e.target.value)} placeholder={window.T('d.cop.ph', 'Ask about attrition, engagement, retention…')} />
+        <button type="submit" className="btn btn-primary btn-sm">{window.T('d.cop.ask', 'Ask')}</button>
+      </form>
+    </div>);
+
+}
+
+/* ---------------- SearchBar ---------------- */
+function SearchBar({ onNav }) {
+  const [q, setQ] = uState('');
+  const [open, setOpen] = uState(false);
+  const [, tick] = uState(0);
+  const ref = uRef(null);
+  const inputRef = uRef(null);
+
+  uEffect(() => {
+    const h = () => tick(n => n + 1);
+    window.addEventListener('stance:data', h);
+    return () => window.removeEventListener('stance:data', h);
+  }, []);
+
+  uEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  uEffect(() => {
+    const h = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); inputRef.current && inputRef.current.focus(); setOpen(true); }
+      if (e.key === 'Escape') { setOpen(false); inputRef.current && inputRef.current.blur(); }
+    };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, []);
+
+  const query = q.toLowerCase().trim();
+  const H = window.HUMIND || {};
+  const allEmps  = H._searchEmps || H.employees || [];
+  const depts    = H.departments || [];
+  const RC = { Critical: 'crit', High: 'high', Moderate: 'mod', Low: 'low' };
+
+  const empResults  = query.length >= 2 ? allEmps.filter(e =>
+    e.name.toLowerCase().includes(query) ||
+    (e.role || '').toLowerCase().includes(query) ||
+    (e.dept || '').toLowerCase().includes(query)
+  ).slice(0, 6) : [];
+
+  const deptResults = query.length >= 2 ? depts.filter(d =>
+    d.name.toLowerCase().includes(query)
+  ).slice(0, 3) : [];
+
+  const hasResults = empResults.length > 0 || deptResults.length > 0;
+
+  function handleEmpClick(emp) {
+    const top10 = H.employees || [];
+    const idx   = top10.findIndex(e => e.id === emp.id || e.name === emp.name);
+    onNav('employee', idx >= 0 ? emp.id : top10[0]?.id || null);
+    setQ(''); setOpen(false);
+  }
+
+  return (
+    <div className="tb-search" style={{ position: 'relative' }} ref={ref}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
+      <input
+        ref={inputRef}
+        value={q}
+        onChange={e => { setQ(e.target.value); setOpen(true); }}
+        onFocus={() => q && setOpen(true)}
+        placeholder={T('d.search', 'Search people, teams, signals…')}
+      />
+      {q
+        ? <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--text-4)',padding:0,fontSize:18,lineHeight:1 }} onClick={() => { setQ(''); setOpen(false); }}>×</button>
+        : <span className="k">⌘K</span>
+      }
+      {open && query.length >= 2 && (
+        <div className="search-drop">
+          {!hasResults && <div className="sr-empty">No results for "{q}"</div>}
+          {empResults.length > 0 && <>
+            <div className="sr-group">Employees</div>
+            {empResults.map(emp => (
+              <button key={emp.id || emp.name} className="sr-item" onClick={() => handleEmpClick(emp)}>
+                <span className="av-sm">{(emp.name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2)}</span>
+                <div className="sr-info">
+                  <span className="sr-name">{emp.name}</span>
+                  <span className="sr-sub">{emp.role} · {emp.dept}</span>
+                </div>
+                <span className={'risk-badge ' + (RC[emp.riskLevel] || 'mod')}>{emp.riskScore}</span>
+              </button>
+            ))}
+          </>}
+          {deptResults.length > 0 && <>
+            <div className="sr-group">Departments</div>
+            {deptResults.map(d => (
+              <button key={d.name} className="sr-item" onClick={() => { onNav('attrition', null); setQ(''); setOpen(false); }}>
+                <span className="av-sm" style={{ fontSize: 8, letterSpacing: 0 }}>DEPT</span>
+                <div className="sr-info">
+                  <span className="sr-name">{d.name}</span>
+                  <span className="sr-sub">{d.head} employees · risk {Math.round(d.risk * 100)}%</span>
+                </div>
+              </button>
+            ))}
+          </>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- App ---------------- */
+const DASH_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "density": "calm",
+  "accent": "purple"
+} /*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(DASH_DEFAULTS);
+  const [view, setView] = uState(() => {
+    const hash = window.location.hash.replace('#', '');
+    return hash && TITLES[hash] ? hash : 'overview';
+  });
+  const [selectedEmpId, setSelectedEmpId] = uState(null);
+  const [upload, setUpload] = uState(false);
+  const [copilot, setCopilot] = uState(false);
+  const [summary, setSummary] = uState(null);
+  const [toast, setToast] = uState(null);
+  const [sideOpen, setSideOpen] = uState(false);
+  const [, setLang] = uState(0);
+  uEffect(() => {
+    const h = () => setLang(n => n + 1);
+    window.addEventListener('stance:lang', h);
+    return () => window.removeEventListener('stance:lang', h);
+  }, []);
+  const T = (k, f) => (window.StanceI18N ? window.StanceI18N.t(k, f) : f);
+
+  uEffect(() => {
+    document.body.setAttribute('data-density', t.density);
+    const map = { purple: ['#7C3AED', '#A78BFA'], sky: ['#38BDF8', '#7DD3FC'], violet: ['#A78BFA', '#C4B5FD'], emerald: ['#2BD9A0', '#6EE7C4'] };
+    const a = map[t.accent] || map.purple;
+    document.body.style.setProperty('--accent', a[0]);
+    document.body.style.setProperty('--accent-2', a[1]);
+    document.body.style.setProperty('--cyan', a[0]);
+    document.body.style.setProperty('--cyan-3', a[1]);
+  }, [t.density, t.accent]);
+
+  function showToast(msg) {setToast(msg);setTimeout(() => setToast(null), 3200);}
+  function openInsight(it) {setCopilot(true);}
+
+  const views = {
+    overview: <OverviewView openInsight={openInsight} openSummary={setSummary} onNav={setView} />,
+    attrition: <AttritionView />,
+    engagement: <EngagementView />,
+    retention: <RetentionView />,
+    employee: <EmployeeIntelligenceView onNav={setView} selectedEmpId={selectedEmpId} />,
+    heatmaps: <HeatmapsView />,
+    insights: <InsightsView openInsight={openInsight} />,
+    reports: <ReportsView openSummary={setSummary} onGenerate={() => setSummary(window.HUMIND.summariesL()[0])} />
+  };
+  const groups = [...new Set(NAV.map((n) => n.group))];
+
+  return (
+    <div className="app">
+      <aside className={'side' + (sideOpen ? ' open' : '')}>
+        <div className="side-top">
+          <a className="brand" href="/"><span className="mark"></span><span>Stance</span></a>
+        </div>
+        <nav className="side-nav">
+          {groups.map((g) =>
+          <React.Fragment key={g}>
+              <div className="side-sec">{T('d.group.' + g, g)}</div>
+              {NAV.filter((n) => n.group === g).map((n) =>
+            <button key={n.id} className={'snav' + (view === n.id ? ' on' : '')} onClick={() => {setView(n.id);setSideOpen(false);}}>
+                  {navIcon(n.id)}<span>{T('d.nav.' + n.id, n.label)}</span>{n.badge && <span className="badge">{n.badge}</span>}
+                </button>
+            )}
+            </React.Fragment>
+          )}
+        </nav>
+        <div className="side-foot">
+          <a className="userchip" href="/sign-in" style={{ textDecoration: 'none' }}>
+            <span className="av">CL</span>
+            <div style={{ flex: 1 }}><div className="un">Claire Lefèvre</div><div className="ur">{T('d.userrole', 'Chief People Officer')}</div></div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="2"><path d="M8 9l4-4 4 4M8 15l4 4 4-4" /></svg>
+          </a>
+        </div>
+      </aside>
+      {sideOpen && <button className="side-scrim" aria-label="Close menu" onClick={() => setSideOpen(false)}></button>}
+
+      <div className="main">
+        <header className="topbar">
+          <button className="modal-x" style={{ display: 'none' }} id="burger" onClick={() => setSideOpen((o) => !o)}>☰</button>
+          <div>
+            <div className="crumb">Stance / {t.density === 'cockpit' ? T('d.crumb.cockpit', 'Cockpit') : T('d.crumb.workspace', 'Workspace')}<span className="crumb-live"><span className="cl-dot"></span>{T('d.live', 'Live')} · {T('d.synced', 'Synced 2m ago')}</span></div>
+            <h1>{T('d.title.' + view, TITLES[view])}</h1>
+          </div>
+          <SearchBar onNav={(v, id) => { setSelectedEmpId(id); setView(v); }} />
+          <LangSwitch />
+          <div className="density-toggle">
+            <button className={t.density === 'calm' ? 'on' : ''} onClick={() => setTweak('density', 'calm')}>{T('d.density.calm', 'Calm')}</button>
+            <button className={t.density === 'cockpit' ? 'on' : ''} onClick={() => setTweak('density', 'cockpit')}>{T('d.density.cockpit', 'Cockpit')}</button>
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={() => setUpload(true)}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>{T('d.upload', 'Upload CSV')}
+          </button>
+        </header>
+
+        <div className="content">{views[view]}</div>
+      </div>
+
+      {!copilot &&
+      <button className="cop-fab" onClick={() => setCopilot(true)}>
+          <span className="ci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg></span>
+          {T('d.fab', 'Ask Stance')}
+        </button>
+      }
+      {copilot && <Copilot onClose={() => setCopilot(false)} />}
+
+      {upload && <UploadModal onClose={() => setUpload(false)} onDone={() => {setUpload(false);showToast(T('d.up.toast', 'Analysis complete · 7 new signals detected'));setView('overview');}} />}
+      {summary && <SummaryModal s={summary} onClose={() => setSummary(null)} />}
+      {toast && <div className="toast"><span className="ti2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>{toast}</div>}
+
+      <TweaksPanel title="Stance">
+        <TweakSection label="Dashboard" />
+        <TweakRadio label="Density" value={t.density} options={['calm', 'cockpit']} onChange={(v) => setTweak('density', v)} />
+        <TweakSection label="Accent" />
+        <TweakColor label="AI accent" value={{ purple: '#7C3AED', sky: '#38BDF8', violet: '#A78BFA', emerald: '#2BD9A0' }[t.accent]}
+        options={['#7C3AED', '#38BDF8', '#A78BFA', '#2BD9A0']}
+        onChange={(hex) => setTweak('accent', { '#7C3AED': 'purple', '#38BDF8': 'sky', '#A78BFA': 'violet', '#2BD9A0': 'emerald' }[hex] || 'purple')} />
+      </TweaksPanel>
+    </div>);
+
+}
+
+(function mount() {
+  const el = document.getElementById('root');
+  if (!el || !window.ReactDOM || !window.useTweaks || !window.OverviewView) {setTimeout(mount, 60);return;}
+  if (document.visibilityState !== 'hidden') document.documentElement.classList.add('anim');
+  ReactDOM.createRoot(el).render(<App />);
+})();

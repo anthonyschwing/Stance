@@ -1,0 +1,65 @@
+/* =========================================================================
+   STANCE — TWEAK HOOKS  (loaded LAST, after humind.css + theme-light.css)
+   Consumes CSS variables + body[data-*] attributes set by __applyStanceTweaks.
+   Pure modularity layer — no new art direction, only knobs on the existing one.
+   ========================================================================= */
+
+/* ---- global container + rhythm ---- */
+.section{ padding: var(--tw-sec-y, clamp(72px,9vw,128px)) 0; }
+.hero h1{ font-size: var(--tw-h1, clamp(38px,5.6vw,72px)); }
+.btn{ border-radius: var(--btn-radius, 999px); }
+
+/* ---- dashboard mockup size (hero stage) ---- */
+.hero-stage{ zoom: var(--tw-stage-zoom, 1); }
+
+/* ---- HERO SIZE ---- */
+body[data-herosize="compact"] .hero{ padding-top:108px; padding-bottom:24px; }
+body[data-herosize="compact"] .hero-grid{ gap:34px; }
+body[data-herosize="compact"] .hero .lead{ margin-top:16px; }
+body[data-herosize="compact"] .trustbar{ margin-top:26px; }
+body[data-herosize="large"] .hero{ padding-top:172px; padding-bottom:60px; }
+body[data-herosize="large"] .hero-grid{ gap:64px; }
+body[data-herosize="large"] .hero .lead{ margin-top:28px; }
+
+/* ---- HERO BALANCE (split layout only) ---- */
+body[data-hero="split"][data-balance="text"] .hero-grid{ grid-template-columns:minmax(0,1.3fr) minmax(0,.8fr); }
+body[data-hero="split"][data-balance="even"] .hero-grid{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+body[data-hero="split"][data-balance="dashboard"] .hero-grid{ grid-template-columns:minmax(0,.66fr) minmax(0,1.42fr); }
+body[data-hero="split"][data-balance="dashboard"] .hero-copy{ max-width:none; }
+
+/* ---- LAYOUT DENSITY ---- */
+body[data-density="compact"]{ --gut:20px; }
+body[data-density="compact"] .cards-3,
+body[data-density="compact"] .insight-grid,
+body[data-density="compact"] .price-grid,
+body[data-density="compact"] .steps{ gap:12px; margin-top:38px; }
+body[data-density="compact"] .bcard,
+body[data-density="compact"] .icard{ padding:20px; }
+body[data-density="compact"] .pcard{ padding:22px; }
+body[data-density="compact"] .stats{ margin-top:34px; }
+
+body[data-density="spacious"]{ --gut:30px; }
+body[data-density="spacious"] .cards-3,
+body[data-density="spacious"] .insight-grid,
+body[data-density="spacious"] .price-grid,
+body[data-density="spacious"] .steps{ gap:26px; margin-top:66px; }
+body[data-density="spacious"] .bcard,
+body[data-density="spacious"] .icard{ padding:34px; }
+body[data-density="spacious"] .pcard{ padding:36px; }
+body[data-density="spacious"] .stats{ margin-top:60px; }
+
+/* ---- KPI CARD STYLE ---- */
+body[data-kpi="outline"] .kpi{ background:transparent !important; border-color:var(--line-2); }
+body[data-kpi="minimal"] .kpi{ background:transparent !important; border:none; padding-left:2px; padding-right:2px; }
+body[data-kpi="minimal"] .kpi .spark{ right:0; }
+body[data-kpi="minimal"] .kpi + .kpi{ border-left:1px solid var(--line); border-radius:0; padding-left:14px; }
+
+/* ---- DASHBOARD COMPACTNESS ---- */
+body[data-dash="compact"] .stage-body{ padding:12px; }
+body[data-dash="compact"] .kpis{ gap:8px; }
+body[data-dash="compact"] .kpi{ padding:11px 12px 10px; }
+body[data-dash="compact"] .kpi .kval{ font-size:23px; margin-top:6px; }
+body[data-dash="compact"] .stage-cols{ gap:9px; margin-top:9px; }
+body[data-dash="compact"] .panel{ padding:13px; }
+body[data-dash="compact"] .copilot{ margin-top:9px; }
+body[data-dash="compact"] .chart-area{ height:168px; }

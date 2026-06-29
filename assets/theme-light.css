@@ -1,0 +1,245 @@
+/* =========================================================================
+   HUMIND — Light premium reskin (layered OVERRIDE, no structural changes)
+   Direction: Linear / Stripe / Notion / HiBob — airy, minimal, high-readability.
+   Loaded AFTER humind.css (+ dashboard.css) so it only re-tints the surface.
+   ========================================================================= */
+:root{
+  /* canvas → airy off-white */
+  --ink-950:#F5F7FA;
+  --ink-900:#F7F9FB;
+  --ink-850:#FFFFFF;
+  --ink-800:#FFFFFF;
+  --ink-700:#EEF1F5;
+
+  /* surfaces & lines (dark-tinted on light) */
+  --surface:rgba(13,24,43,.018);
+  --surface-2:rgba(13,24,43,.035);
+  --surface-3:rgba(13,24,43,.06);
+  --line:rgba(13,24,43,.08);
+  --line-2:rgba(13,24,43,.13);
+  --glass:rgba(255,255,255,.72);
+
+  /* calmer cyan (less neon), deep ink for primary */
+  --cyan:#7C3AED;
+  --cyan-2:#6D28D9;
+  --cyan-3:#8B5CF6;
+  --cyan-deep:#6D28D9;
+  --ink-brand:#0B1220;
+  --ink-brand-2:#1B2740;
+
+  /* text */
+  --text:#0B1220;
+  --text-2:#46536B;
+  --text-3:#697587;
+  --text-4:#97A1B0;
+
+  /* semantic (readable on white) */
+  --green:#10936B;
+  --amber:#C7891B;
+  --red:#D8556A;
+  --violet:#6E5DE0;
+
+  /* shadows → soft neutral (Stripe-like) */
+  --sh-card:0 1px 2px rgba(16,24,40,.05), 0 6px 18px -8px rgba(16,24,40,.12);
+  --sh-glow:0 1px 2px rgba(16,24,40,.05), 0 14px 34px -16px rgba(124,58,237,.28);
+  --sh-soft:0 14px 40px -20px rgba(16,24,40,.22);
+
+  --accent:var(--cyan);
+  --accent-2:var(--cyan-2);
+}
+
+body{background:#F5F7FA;color:var(--text)}
+
+/* ---- calm the ambient: drop the command-center grid + noise ---- */
+.grid-veil{display:none}
+.noise{display:none}
+.field::before{
+  background:
+    radial-gradient(60% 44% at 50% 0%, rgba(124,58,237,.07), transparent 62%),
+    radial-gradient(40% 30% at 85% 8%, rgba(110,93,224,.05), transparent 60%);
+  filter:none;
+}
+
+/* ---- type: headings ink, accent only where intended ---- */
+.grad{
+  background:var(--brand-grad);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.eyebrow{color:var(--cyan-deep)}
+.lead{color:var(--text-2)}
+
+/* ---- pills ---- */
+.pill{
+  background:#fff;border:1px solid var(--line-2);color:var(--text-2);
+  box-shadow:var(--sh-card);backdrop-filter:none;
+}
+.pill .dot{background:var(--cyan);box-shadow:0 0 0 3px rgba(124,58,237,.16)}
+
+/* ---- buttons: primary = solid ink (premium), ghost = white ---- */
+.btn-primary{
+  color:#fff;background:var(--ink-brand);
+  box-shadow:0 1px 2px rgba(16,24,40,.18), 0 8px 20px -10px rgba(16,24,40,.4);
+}
+.btn-primary:hover{background:#161f33;box-shadow:0 2px 4px rgba(16,24,40,.2), 0 12px 26px -10px rgba(16,24,40,.45);transform:translateY(-1px)}
+.btn-ghost{color:var(--text);background:#fff;border-color:var(--line-2);box-shadow:var(--sh-card);backdrop-filter:none}
+.btn-ghost:hover{background:#fff;border-color:var(--cyan);transform:translateY(-1px)}
+
+/* ---- nav ---- */
+.nav.scrolled{background:rgba(255,255,255,.82);border-bottom-color:var(--line);backdrop-filter:blur(14px) saturate(140%)}
+.nav-links a{color:var(--text-2)}
+.nav-links a:hover{color:var(--text);background:var(--surface-2)}
+.nav-ghost{color:var(--text-2)}
+.nav-ghost:hover{color:var(--text)}
+.brand{color:var(--text)}
+.brand .mark{
+  background:url("humind-symbol.png") center/contain no-repeat;
+  box-shadow:none;border-radius:0;
+}
+.brand .ph{color:var(--text-4)}
+
+/* ---- generic cards: crisp white on light ---- */
+.bcard,.stepc,.icard,.pcard,.kpi,.panel,.stat,.feed,.exec-doc,.stats,
+.tb-search,.userchip,.density-toggle,.seg{
+  background:#fff !important;
+  border-color:var(--line);
+}
+.bcard,.stepc,.icard,.pcard,.exec-doc{box-shadow:var(--sh-card)}
+.kpi,.panel{box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.bcard:hover{border-color:rgba(124,58,237,.4);box-shadow:var(--sh-glow)}
+.bcard::after{background:radial-gradient(80% 60% at 50% 0%,rgba(124,58,237,.07),transparent 60%)}
+.bcard p,.icard p,.stepc p,.kpi .kval{color:inherit}
+.bcard p,.icard p,.stepc p{color:var(--text-3)}
+
+/* card icon tiles → soft tinted */
+.bcard .ic,.drop .di,.copilot .cp-ic{
+  background:linear-gradient(180deg,rgba(124,58,237,.12),rgba(124,58,237,.04));
+  border-color:rgba(124,58,237,.25);color:var(--cyan-deep);
+}
+.stepc .ic,.cop-head .ci,.cop-fab .ci,.userchip .av{
+  color:#fff;background:linear-gradient(180deg,#1B2740,var(--ink-brand));box-shadow:none;
+}
+
+/* ---- stage / dashboard preview frame → light ---- */
+.stage-frame{
+  background:#fff;border-color:var(--line);
+  box-shadow:0 1px 2px rgba(16,24,40,.05), 0 30px 70px -36px rgba(16,24,40,.28);
+}
+.stage-frame::before{background:radial-gradient(120% 80% at 80% -10%,rgba(124,58,237,.06),transparent 55%)}
+.stage-top{background:linear-gradient(180deg,rgba(13,24,43,.02),transparent);border-bottom-color:var(--line)}
+.stage-url,.stage-live{color:var(--text-3)}
+.stage-live{color:var(--cyan-deep)}
+.kpi{background:linear-gradient(180deg,#fff,#fff)}
+.kpi .klabel,.panel-h .pl,.axis-x span,.side-sec,.crumb,.tbl th,.feed .fm,.ed-sub{color:var(--text-4)}
+
+/* copilot bar (hero) */
+.copilot{background:#fff;border-color:var(--line-2);box-shadow:var(--sh-card)}
+.copilot input{color:var(--text)}
+.copilot .cp-label{color:var(--cyan-deep)}
+
+/* ---- how-it-works connectors ---- */
+.step-conn{color:var(--text-4)}
+.stepc .num{color:var(--cyan-deep)}
+
+/* ---- pricing featured ---- */
+.pcard.feat{border-color:rgba(124,58,237,.45) !important;box-shadow:0 1px 2px rgba(16,24,40,.05),0 18px 44px -22px rgba(124,58,237,.35)}
+.pcard.feat .pname{color:var(--cyan-deep)}
+.pbadge{background:var(--ink-brand);color:#fff}
+.pfeat li svg{color:var(--cyan)}
+
+/* ---- final CTA ---- */
+.cta-final{background:linear-gradient(180deg,#0E1830,#0B1220);border-color:rgba(13,24,43,.4)}
+.cta-final::before{background:radial-gradient(70% 90% at 50% 0%,rgba(124,58,237,.22),transparent 62%)}
+.cta-final h2{color:#fff}
+.cta-final .lead{color:#AEB9CE}
+.cta-final .eyebrow{color:#A78BFA}
+.cta-final .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22);box-shadow:none}
+.cta-final .btn-ghost:hover{background:rgba(255,255,255,.14)}
+
+/* ---- footer ---- */
+.foot{border-top-color:var(--line)}
+.foot a{color:var(--text-3)}
+.foot a:hover{color:var(--text)}
+.foot-bot{border-top-color:var(--line);color:var(--text-4)}
+
+/* =========================== DASHBOARD APP =========================== */
+.side{background:#fff;border-right-color:var(--line);backdrop-filter:none}
+.snav{color:var(--text-2)}
+.snav:hover{background:var(--surface-2);color:var(--text)}
+.snav.on{background:linear-gradient(90deg,rgba(124,58,237,.12),rgba(124,58,237,.03));color:var(--text);border-color:rgba(124,58,237,.28)}
+.snav .badge{background:var(--red);color:#fff}
+.side-foot,.side-sec{border-color:var(--line)}
+.userchip{box-shadow:none}
+.userchip .un{color:var(--text)}
+
+.topbar{background:rgba(255,255,255,.82);border-bottom-color:var(--line);backdrop-filter:blur(14px)}
+.topbar h1{color:var(--text)}
+.tb-search input{color:var(--text)}
+.tb-search .k{color:var(--text-4);border-color:var(--line-2)}
+.density-toggle button{color:var(--text-3)}
+.density-toggle button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(16,24,40,.12)}
+
+.seg button{color:var(--text-3)}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(16,24,40,.12)}
+.chip{color:var(--text-3);border-color:var(--line-2)}
+.chip.cyan{color:var(--cyan-deep);border-color:rgba(124,58,237,.4)}
+
+/* tables */
+.tbl th,.tbl td{border-bottom-color:var(--line)}
+.tbl td{color:var(--text-2)}
+.tbl tr:hover td{background:var(--surface)}
+.tbl .av-sm{background:var(--surface-2);border-color:var(--line);color:var(--text)}
+.riskbar{background:var(--surface-3)}
+.barrow .bt{background:var(--surface-3)}
+.barrow .bl{color:var(--text-2)}
+
+/* feed items */
+.feed:hover{border-color:rgba(124,58,237,.35)}
+.feed .ft{color:var(--text)}
+.feed .fi.red{background:rgba(216,85,106,.12)}
+.feed .fi.amber{background:rgba(199,137,27,.14)}
+.feed .fi.cyan{background:rgba(124,58,237,.12)}
+.feed .fi.green{background:rgba(16,147,107,.14)}
+
+/* modals / dock → light */
+.scrim{background:rgba(16,24,40,.4);backdrop-filter:blur(4px)}
+.modal,.cop-panel{background:#fff;border-color:var(--line-2);box-shadow:0 30px 80px -24px rgba(16,24,40,.4)}
+.modal-top,.modal-body,.cop-head,.cop-input,.cop-sugg{border-color:var(--line)}
+.modal-x{background:var(--surface-2);border-color:var(--line-2);color:var(--text-2)}
+.modal-x:hover{color:var(--text)}
+.drop{background:repeating-linear-gradient(45deg,rgba(13,24,43,.015) 0 12px,transparent 12px 24px)}
+.drop:hover,.drop.drag{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.05)}
+.drop h4{color:var(--text)}
+.srow .si{background:var(--surface-2);border-color:var(--line-2)}
+.srow.done .si{background:rgba(16,147,107,.16);border-color:var(--green);color:var(--green)}
+.prog{background:var(--surface-3)}
+
+.cop-fab{
+  background:#fff;border-color:var(--line-2);color:var(--text);
+  box-shadow:0 1px 2px rgba(16,24,40,.08), 0 14px 34px -16px rgba(16,24,40,.35);
+}
+.cop-msgs .msg.a{background:var(--surface);border-color:var(--line);color:var(--text-2)}
+.msg.a .mh{color:var(--cyan-deep)}
+.msg.u{color:#fff;background:var(--ink-brand)}
+.cop-sugg button{background:#fff;border-color:var(--line-2);color:var(--text-2)}
+.cop-sugg button:hover{border-color:rgba(124,58,237,.4);color:var(--text)}
+.cop-input input{background:#fff;border-color:var(--line-2);color:var(--text)}
+.cop-head span{color:var(--text-3)}
+
+.toast{background:#fff;border-color:rgba(16,147,107,.4);box-shadow:var(--sh-soft);color:var(--text)}
+.toast .ti2{background:rgba(16,147,107,.14);color:var(--green)}
+
+/* exec summary doc on dark sections stays readable on white now */
+.exec-doc{background:#fff}
+.exec-doc .ed-top{border-bottom-color:var(--line)}
+.exec-doc .ed-badge{color:var(--cyan-deep);border-color:rgba(124,58,237,.35)}
+.exec-line{border-top-color:var(--line)}
+.exec-line .en{color:var(--cyan-deep)}
+.exec-stat b,.exec-doc h4{color:var(--text)}
+
+/* signals list separators */
+.sig{border-top-color:var(--line)}
+.sig .ss,.feed .fs{color:var(--text-3)}
+
+/* misc text that was light-on-dark */
+.panel-title,.kpi .kval,.stepc h3,.icard h3,.bcard h3,.pcard .pprice{color:var(--text)}
+.kpi .kval{color:var(--text)}

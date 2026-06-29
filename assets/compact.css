@@ -1,0 +1,81 @@
+/* =========================================================================
+   HUMIND — COMPACT layer (loaded LAST)
+   Dark-only, dense, ≤3 screen heights. Tightens the existing system without
+   changing the brand: smaller container, tighter section rhythm, compressed
+   product-preview cockpit, slim footer. Reference: Linear / Vercel / Attio.
+   ========================================================================= */
+
+:root{
+  --maxw:1160px;
+  --tw-sec-y:48px;          /* default section rhythm (was clamp 72–128) */
+}
+
+/* ---- global rhythm ---- */
+.section{ padding: var(--tw-sec-y) 0; }
+.shead{ max-width:640px; }
+.shead h2{ margin-top:10px; }
+.shead p{ margin-top:12px; font-size:15.5px; }
+.cards-3, .price-grid, .insight-grid, .steps{ margin-top:30px; }
+
+/* ---- nav: a touch slimmer ---- */
+.nav-in{ height:62px; }
+
+/* ============================ HERO ============================ */
+.hero{ padding-top:96px; padding-bottom:16px; }
+body[data-hero="split"] .hero-grid{ gap:44px; grid-template-columns:minmax(0,.92fr) minmax(0,1.12fr); }
+.hero h1{ margin-top:14px; font-size:clamp(36px,4.4vw,52px); }
+.hero .lead{ margin-top:16px; font-size:16px; max-width:46ch; }
+.hero-cta{ margin-top:24px; }
+.trustbar{ margin-top:24px; gap:18px; }
+
+/* ============================ PRODUCT PREVIEW ============================ */
+#preview .showcase-frame{ margin-top:30px; }
+#preview .show-grid{ gap:11px; padding:12px; grid-template-columns:200px 1fr 280px; }
+#preview .show-nav .ni{ padding:8px 11px; font-size:13px; }
+#preview .panel{ padding:12px; }
+#preview .chart-area{ height:108px !important; margin-top:6px; }
+#preview .kpis{ gap:9px; }
+#preview .kpi{ padding:11px 12px 10px; }
+#preview .kpi .kval{ font-size:22px; margin-top:5px; }
+#preview .gauge{ width:100px; height:100px; }
+#preview .gauge .gnum b{ font-size:27px; }
+#preview .heat{ margin-top:8px; }
+
+/* ============================ FEATURES ============================ */
+#features .bcard{ padding:22px; }
+#features .bcard .ic{ width:42px; height:42px; margin-bottom:14px; }
+#features .bcard h3{ font-size:19px; margin-bottom:7px; }
+#features .bcard p{ font-size:14px; }
+/* slim stat strip */
+#features .stats{ margin-top:18px; }
+#features .stat{ padding:18px 22px; }
+#features .stat b{ font-size:clamp(24px,2.4vw,32px); }
+#features .stat span{ font-size:12.5px; }
+
+/* ============================ PRICING ============================ */
+#pricing .pcard{ padding:22px; }
+#pricing .pcard .pprice{ font-size:32px; margin:10px 0 2px; }
+#pricing .pcard .pdesc{ min-height:0; margin-bottom:14px; font-size:13px; }
+#pricing .pfeat{ gap:8px; margin-bottom:18px; }
+#pricing .pfeat li{ font-size:13px; }
+
+/* ============================ CTA ============================ */
+#cta{ padding-top:6px; padding-bottom:40px; }
+.cta-final{ padding:clamp(36px,4vw,52px) var(--gut); }
+.cta-final h2{ font-size:clamp(28px,3.4vw,42px); }
+.cta-final .lead{ margin-top:14px; font-size:16px; }
+.cta-final .hero-cta{ margin-top:24px; }
+
+/* ============================ FOOTER (slim) ============================ */
+.foot{ padding:30px 0 26px; margin-top:0; }
+.foot-slim{ display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.foot-slim .brand{ font-size:18px; }
+.foot-slim nav{ display:flex; gap:22px; flex-wrap:wrap; }
+.foot-slim nav a{ color:var(--text-3); font-size:14px; transition:color .2s; }
+.foot-slim nav a:hover{ color:var(--text); }
+.foot-slim .meta{ font-family:var(--f-mono); font-size:11px; letter-spacing:.12em; color:var(--text-4); }
+
+@media(max-width:900px){
+  body[data-hero="split"] .hero-grid{ grid-template-columns:1fr; }
+  #preview .show-grid{ grid-template-columns:1fr; }
+}
