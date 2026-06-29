@@ -369,24 +369,24 @@ body[data-hero="split"] .hero-copy{ max-width:600px; padding-top:6px; }
   100% { background-position: 0% 50%; }
 }
 @keyframes float1 {
-  0%, 100% { transform: translate(0px, 0px); }
-  33%       { transform: translate(25px, -35px); }
-  66%       { transform: translate(-15px, 20px); }
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(30px, -40px); }
+  66%       { transform: translate(-20px, 25px); }
 }
 @keyframes float2 {
-  0%, 100% { transform: translate(0px, 0px); }
-  50%       { transform: translate(-20px, 30px); }
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-25px, 35px); }
 }
 @keyframes float3 {
-  0%, 100% { transform: translate(0px, 0px); }
-  50%       { transform: translate(15px, -20px); }
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(20px, -25px); }
 }
 
 /* Body animated gradient */
 body {
-  background: linear-gradient(-45deg, #0B0F19, #0f1528, #0d1220, #111827, #0B0F19);
+  background: linear-gradient(-45deg, #0B0F19, #1a0533, #0d1b4b, #1a0533, #0B0F19);
   background-size: 400% 400%;
-  animation: gradientShift 18s ease infinite;
+  animation: gradientShift 15s ease infinite;
   min-height: 100vh;
 }
 
@@ -400,43 +400,57 @@ body {
   will-change: transform;
 }
 .page-halo--1 {
-  top: 20%; left: -10%;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(124,58,237,.10) 0%, transparent 65%);
-  filter: blur(80px);
+  top: 15%; left: -5%;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(124,58,237,.28) 0%, transparent 65%);
+  filter: blur(90px);
   animation: float1 10s ease-in-out infinite;
 }
 .page-halo--2 {
-  top: 50%; right: -10%;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(79,70,229,.08) 0%, transparent 65%);
-  filter: blur(70px);
+  top: 45%; right: -5%;
+  width: 550px; height: 550px;
+  background: radial-gradient(circle, rgba(79,70,229,.22) 0%, transparent 65%);
+  filter: blur(80px);
   animation: float2 13s ease-in-out infinite;
 }
 .page-halo--3 {
-  bottom: 10%; left: 30%;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(167,139,250,.07) 0%, transparent 65%);
-  filter: blur(60px);
+  bottom: 5%; left: 25%;
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(167,139,250,.18) 0%, transparent 65%);
+  filter: blur(70px);
   animation: float3 9s ease-in-out infinite;
 }
 
-/* Hero content above everything */
+/* Tout le contenu au-dessus du fond */
+main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
 .hero { overflow: hidden; }
-.hero > .wrap { position: relative; z-index: 1; }
 
-/* Sections transparentes — laissent voir le fond animé */
+/* Sections transparentes */
 .section { background: transparent !important; }
 
-/* Mobile — halos en absolute (fix iOS), taille 50%, durée x1.5 */
+/* Glassmorphism — toutes les cards et surfaces */
+.bcard, .stepc, .icard, .pcard, .panel, .kpi,
+.player-card, .exec-doc, .uc, .sig, .drop {
+  background: rgba(17,24,39,.55) !important;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.06) !important;
+}
+.pcard.feat {
+  background: rgba(124,58,237,.18) !important;
+  border-color: rgba(124,58,237,.4) !important;
+}
+
+/* Mobile — halos en absolute (fix iOS), 50%, backdrop réduit */
 @media (max-width: 768px) {
-  body { animation-duration: 27s; }
   .page-halo { position: absolute; }
-  .page-halo--1 { width: 300px; height: 300px; animation-duration: 15s; }
-  .page-halo--2 { width: 250px; height: 250px; animation-duration: 19.5s; }
-  .page-halo--3 { width: 200px; height: 200px; animation-duration: 13.5s; }
+  .page-halo--1 { width: 350px; height: 350px; }
+  .page-halo--2 { width: 275px; height: 275px; }
+  .page-halo--3 { width: 225px; height: 225px; }
+  .bcard, .stepc, .icard, .pcard, .panel, .kpi,
+  .player-card, .exec-doc, .uc, .sig, .drop {
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  body { animation: none; }
-  .page-halo { animation: none; }
+  body, .page-halo { animation: none; }
 }
