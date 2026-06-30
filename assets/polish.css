@@ -154,8 +154,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, .btn:focus-visible{
 .show-nav .ni{ transition:background .2s var(--ease), color .2s var(--ease); }
 .show-nav .ni.on{ box-shadow:var(--hl-top); }
 
-/* ---- FINAL CTA: richer but still restrained ---- */
-.cta-final{ box-shadow:var(--hl-top-strong), 0 40px 100px -60px rgba(0,0,0,.9); }
+/* ---- FINAL CTA: aligned with .bcard style ---- */
+.cta-final{ transition:transform .32s var(--ease), border-color .32s var(--ease), box-shadow .32s var(--ease); }
+.cta-final:hover{ transform:translateY(-5px); border-color:rgba(124,58,237,.35) !important; box-shadow:var(--hl-top-strong), var(--sh-glow) !important; }
 .cta-final h2{ letter-spacing:-.03em; }
 
 /* ---- FOOTER ---- */
@@ -441,6 +442,24 @@ main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
   border-color: rgba(124,58,237,.45) !important;
 }
 
+/* Glassmorphism — hero dashboard frame */
+.stage-frame {
+  background: rgba(13,18,30,.62) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(167,139,250,.18) !important;
+}
+
+/* Glassmorphism — final CTA card (aligned with .bcard) */
+.cta-final {
+  background: rgba(255,255,255,.05) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(167,139,250,.20) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--hl-top) !important;
+}
+
 /* Mobile — halos en absolute (fix iOS), 50% */
 @media (max-width: 768px) {
   .page-halo { position: absolute; }
@@ -448,7 +467,8 @@ main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
   .page-halo--2 { width: 275px; height: 275px; }
   .page-halo--3 { width: 225px; height: 225px; }
   .bcard, .stepc, .icard, .pcard, .panel, .kpi,
-  .player-card, .exec-doc, .uc, .drop {
+  .player-card, .exec-doc, .uc, .drop,
+  .stage-frame, .cta-final {
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
   }
