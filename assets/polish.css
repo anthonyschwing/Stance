@@ -445,8 +445,8 @@ body:not([data-theme="light"]) {
   min-height: 100vh;
 }
 body[data-theme="light"] {
-  background: #ffffff;
-  animation: none;
+  background: #ffffff !important;
+  animation: none !important;
 }
 
 /* Neutralise le fond existant du .field::before — dark only, halos s'en chargent */
