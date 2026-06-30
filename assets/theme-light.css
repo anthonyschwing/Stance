@@ -243,3 +243,23 @@ body{background:#F5F7FA;color:var(--text)}
 /* misc text that was light-on-dark */
 .panel-title,.kpi .kval,.stepc h3,.icard h3,.bcard h3,.pcard .pprice{color:var(--text)}
 .kpi .kval{color:var(--text)}
+
+/* ---- ambient field: très léger voile violet/lavande ---- */
+.field::before{
+  background:
+    radial-gradient(68% 48% at 50% 0%, rgba(124,58,237,.07), transparent 62%),
+    radial-gradient(38% 28% at 82% 10%, rgba(167,139,250,.05), transparent 58%),
+    radial-gradient(42% 32% at 14% 20%, rgba(124,58,237,.04), transparent 60%);
+  filter:none;
+}
+
+/* ---- page halos: version pastel pour fond blanc ---- */
+.page-halo--1{
+  background:radial-gradient(circle,rgba(167,139,250,.14) 0%,transparent 65%);
+}
+.page-halo--2{
+  background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 65%);
+}
+.page-halo--3{
+  background:radial-gradient(circle,rgba(196,181,253,.10) 0%,transparent 65%);
+}

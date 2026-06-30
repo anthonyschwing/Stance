@@ -483,29 +483,35 @@ main, nav, footer, .section, .hero > .wrap { position: relative; z-index: 1; }
 /* Sections transparentes */
 .section { background: transparent !important; }
 
-/* Glassmorphism — cards et surfaces */
-.bcard, .stepc, .icard, .pcard,
-.panel, .kpi, .player-card, .exec-doc, .drop, .uc {
+/* Glassmorphism — dark mode only */
+body[data-theme="dark"] .bcard,
+body[data-theme="dark"] .stepc,
+body[data-theme="dark"] .icard,
+body[data-theme="dark"] .pcard,
+body[data-theme="dark"] .panel,
+body[data-theme="dark"] .kpi,
+body[data-theme="dark"] .player-card,
+body[data-theme="dark"] .exec-doc,
+body[data-theme="dark"] .drop,
+body[data-theme="dark"] .uc {
   background: rgba(255,255,255,.05) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(167,139,250,.20) !important;
 }
-.pcard.feat {
+body[data-theme="dark"] .pcard.feat {
   background: rgba(124,58,237,.18) !important;
   border-color: rgba(124,58,237,.45) !important;
 }
 
-/* Glassmorphism — hero dashboard frame */
-.stage-frame {
+body[data-theme="dark"] .stage-frame {
   background: rgba(13,18,30,.62) !important;
   backdrop-filter: blur(20px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
   border: 1px solid rgba(167,139,250,.18) !important;
 }
 
-/* Glassmorphism — final CTA card (aligned with .bcard) */
-.cta-final {
+body[data-theme="dark"] .cta-final {
   background: rgba(255,255,255,.05) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
@@ -585,9 +591,18 @@ html.anim .uc-grid.reveal.in .uc h3 {
   .page-halo--1 { width: 350px; height: 350px; }
   .page-halo--2 { width: 275px; height: 275px; }
   .page-halo--3 { width: 225px; height: 225px; }
-  .bcard, .stepc, .icard, .pcard, .panel, .kpi,
-  .player-card, .exec-doc, .uc, .drop,
-  .stage-frame, .cta-final {
+  body[data-theme="dark"] .bcard,
+  body[data-theme="dark"] .stepc,
+  body[data-theme="dark"] .icard,
+  body[data-theme="dark"] .pcard,
+  body[data-theme="dark"] .panel,
+  body[data-theme="dark"] .kpi,
+  body[data-theme="dark"] .player-card,
+  body[data-theme="dark"] .exec-doc,
+  body[data-theme="dark"] .uc,
+  body[data-theme="dark"] .drop,
+  body[data-theme="dark"] .stage-frame,
+  body[data-theme="dark"] .cta-final {
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
   }
