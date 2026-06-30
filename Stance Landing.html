@@ -561,38 +561,6 @@
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="assets/tweaks-app.jsx"></script>
 
-<!-- ===== TITLE WIPE — IntersectionObserver (fires only when in viewport) ===== -->
-<script>
-(function () {
-  function setup() {
-    if (!document.documentElement.classList.contains('anim')) return;
-
-    var obs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('title-in');
-          obs.unobserve(entry.target);
-        }
-      });
-    }, {
-      /* mirror landing.js threshold: fire when element crosses 88% of viewport */
-      rootMargin: '0px 0px -10% 0px',
-      threshold: 0.15
-    });
-
-    document.querySelectorAll(
-      '.shead h2, .cta-final h2, .bcard h3, .stepc h3, .uc h3'
-    ).forEach(function (el) { obs.observe(el); });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
-  } else {
-    setup();
-  }
-})();
-</script>
-
 <!-- ===== HERO TITLE — cinematic character reveal ===== -->
 <script>
 (function () {

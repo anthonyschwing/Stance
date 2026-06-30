@@ -480,12 +480,36 @@ html.anim .cta-final h2 {
   opacity: 0;
   clip-path: inset(0 100% -4px 0);
 }
-/* Trigger via .title-in (set by IntersectionObserver, not .reveal timeout) */
-html.anim h2.title-in {
-  animation: title-wipe-in 1.4s cubic-bezier(.16,1,.3,1) forwards;
+html.anim .shead.reveal.in h2,
+html.anim .cta-final.reveal.in h2 {
+  animation: title-wipe-in 1.4s cubic-bezier(.16,1,.3,1) .22s forwards;
 }
-html.anim h3.title-in {
-  animation: title-wipe-in 1.2s cubic-bezier(.16,1,.3,1) forwards;
+
+/* ---- feature card h3 ---- */
+html.anim .bcard h3 {
+  opacity: 0;
+  clip-path: inset(0 100% -4px 0);
+}
+html.anim .bcard.reveal.in h3 {
+  animation: title-wipe-in 1.2s cubic-bezier(.16,1,.3,1) .12s forwards;
+}
+
+/* ---- how-it-works h3 ---- */
+html.anim .stepc h3 {
+  opacity: 0;
+  clip-path: inset(0 100% -4px 0);
+}
+html.anim .steps.reveal.in .stepc h3 {
+  animation: title-wipe-in 1.2s cubic-bezier(.16,1,.3,1) .14s forwards;
+}
+
+/* ---- use-case h3 ---- */
+html.anim .uc h3 {
+  opacity: 0;
+  clip-path: inset(0 100% -4px 0);
+}
+html.anim .uc-grid.reveal.in .uc h3 {
+  animation: title-wipe-in 1.2s cubic-bezier(.16,1,.3,1) .14s forwards;
 }
 
 /* ---- prefers-reduced-motion (WCAG) ---- */

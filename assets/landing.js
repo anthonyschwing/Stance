@@ -145,7 +145,15 @@
     window.addEventListener('resize', checkReveals, { passive: true });
     // safety: ensure nothing stays hidden if scroll never happens
     setTimeout(checkReveals, 300);
-    setTimeout(function () { reveals.forEach(revealEl); reveals = []; }, 2500);
+    // safety net: after 2.5s only reveal elements already visible in viewport
+    // (below-fold elements stay hidden until actually scrolled to)
+    setTimeout(function () {
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      reveals = reveals.filter(function (el) {
+        if (el.getBoundingClientRect().top < vh) { revealEl(el); return false; }
+        return true;
+      });
+    }, 2500);
     // watchdog: if transitions are throttled and content is stuck hidden, drop anim
     if (canAnimate) {
       setTimeout(function () {
