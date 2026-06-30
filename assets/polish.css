@@ -445,8 +445,15 @@ body {
   min-height: 100vh;
 }
 
-/* Neutralise le fond existant du .field::before */
-.field::before { background: none !important; filter: none !important; }
+/* Neutralise le fond existant du .field::before — dark only, halos s'en chargent */
+body:not([data-theme="light"]) .field::before { background: none !important; filter: none !important; }
+/* Light mode : voile lavande très subtil sur fond blanc */
+body[data-theme="light"] .field::before {
+  background:
+    radial-gradient(70% 50% at 50% 0%, rgba(167,139,250,.09), transparent 62%),
+    radial-gradient(40% 30% at 82% 10%, rgba(124,58,237,.05), transparent 58%) !important;
+  filter: none !important;
+}
 
 /* Fixed halos */
 .page-halo {
@@ -474,6 +481,17 @@ body {
   background: radial-gradient(circle, rgba(167,139,250,.18) 0%, transparent 65%);
   filter: blur(70px);
   animation: float3 9s ease-in-out infinite;
+}
+
+/* Light mode — halos pastels (overrides les couleurs dark ci-dessus) */
+body[data-theme="light"] .page-halo--1 {
+  background: radial-gradient(circle, rgba(167,139,250,.13) 0%, transparent 65%);
+}
+body[data-theme="light"] .page-halo--2 {
+  background: radial-gradient(circle, rgba(124,58,237,.07) 0%, transparent 65%);
+}
+body[data-theme="light"] .page-halo--3 {
+  background: radial-gradient(circle, rgba(196,181,253,.09) 0%, transparent 65%);
 }
 
 /* Tout le contenu au-dessus du fond */
@@ -609,4 +627,43 @@ html.anim .uc-grid.reveal.in .uc h3 {
 }
 @media (prefers-reduced-motion: reduce) {
   body, .page-halo { animation: none; }
+}
+
+/* =================================================================
+   LIGHT MODE — surfaces spécifiques
+   ================================================================= */
+
+/* Ask Stance card */
+body[data-theme="light"] .ask-card {
+  background: #fff !important;
+  border-color: var(--line) !important;
+  box-shadow: var(--sh-card) !important;
+}
+body[data-theme="light"] .ask-card::before { background: none !important; }
+body[data-theme="light"] .ask-q {
+  background: none !important;
+  border-bottom-color: var(--line) !important;
+}
+
+/* Final CTA — fond blanc, texte ink */
+body[data-theme="light"] .cta-final {
+  background: #fff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--line) !important;
+  box-shadow: var(--sh-card) !important;
+}
+body[data-theme="light"] .cta-final::before { background: radial-gradient(70% 60% at 50% 0%, rgba(167,139,250,.08), transparent 62%) !important; }
+body[data-theme="light"] .cta-final h2 { color: var(--text) !important; }
+body[data-theme="light"] .cta-final .lead { color: var(--text-2) !important; }
+body[data-theme="light"] .cta-final .eyebrow { color: var(--cyan-deep) !important; }
+body[data-theme="light"] .cta-final .btn-ghost {
+  background: #fff !important;
+  color: var(--text) !important;
+  border-color: var(--line-2) !important;
+  box-shadow: var(--sh-card) !important;
+}
+body[data-theme="light"] .cta-final:hover {
+  border-color: rgba(124,58,237,.3) !important;
+  box-shadow: var(--sh-glow) !important;
 }
