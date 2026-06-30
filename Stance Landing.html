@@ -28,6 +28,7 @@
   </svg>
 </template>
 <body data-theme="dark" data-hero="split" data-density="compact" data-dash="compact" data-kpi="solid">
+<script>(function(){var t=localStorage.getItem('stance-theme');if(t){document.body.dataset.theme=t;var l=document.getElementById('themeLight');if(l)l.media=t==='light'?'all':'not all';}})();</script>
 
 <div class="field"></div>
 <div class="grid-veil"></div>
@@ -54,6 +55,10 @@
         <span class="lang-div" aria-hidden="true">|</span>
         <button type="button" class="lang-opt" data-lang="fr">FR</button>
       </div>
+      <button type="button" class="theme-toggle" aria-label="Switch to light theme">
+        <svg class="theme-icon theme-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="theme-icon theme-icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <a class="nav-ghost" href="/sign-in" data-i18n="nav.signin">Sign in</a>
       <a class="btn btn-primary btn-sm" href="#cta" data-i18n="nav.demo">Book a Demo</a>
     </div>
@@ -84,6 +89,12 @@
         <button type="button" class="lang-opt" data-lang="fr">FR</button>
       </div>
     </div>
+    <button type="button" class="theme-toggle theme-toggle--mobile" aria-label="Switch to light theme">
+      <svg class="theme-icon theme-icon--sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="theme-icon theme-icon--moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <span class="theme-toggle-lbl theme-lbl--dark" data-i18n="nav.lightmode">Light mode</span>
+      <span class="theme-toggle-lbl theme-lbl--light" data-i18n="nav.darkmode">Dark mode</span>
+    </button>
     <a class="btn btn-ghost btn-lg np-signin" href="/sign-in" data-i18n="nav.signin">Sign in</a>
     <a class="btn btn-primary btn-lg" href="#cta" data-i18n="nav.demo">Book a Demo</a>
   </div>
@@ -386,12 +397,6 @@
 
 </main>
 
-<!-- tweaks mount -->
-<div id="tweaks-root"></div>
-
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="assets/i18n.js"></script>
 <script src="assets/landing.js"></script>
 <script>
@@ -558,8 +563,26 @@
   render(active);
 })();
 </script>
-<script type="text/babel" src="tweaks-panel.jsx"></script>
-<script type="text/babel" src="assets/tweaks-app.jsx"></script>
+<!-- ===== THEME TOGGLE ===== -->
+<script>
+(function () {
+  function applyTheme(t) {
+    document.body.dataset.theme = t;
+    var l = document.getElementById('themeLight');
+    if (l) l.media = t === 'light' ? 'all' : 'not all';
+    var label = t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+    document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+      btn.setAttribute('aria-label', label);
+    });
+    localStorage.setItem('stance-theme', t);
+  }
+  document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+  });
+})();
+</script>
 
 <!-- ===== HERO TITLE — cinematic character reveal ===== -->
 <script>

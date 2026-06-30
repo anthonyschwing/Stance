@@ -7,6 +7,60 @@
    interactions. Brand Kit palette + logo untouched.
    ========================================================================= */
 
+/* ---- Theme toggle button ---- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(167,139,250,.22);
+  background: rgba(255,255,255,.05);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-2, #A8B2D8);
+  flex-shrink: 0;
+  transition: background .2s, border-color .2s, color .2s, transform .18s var(--ease, ease);
+}
+.theme-toggle:hover {
+  background: rgba(167,139,250,.14);
+  border-color: rgba(167,139,250,.42);
+  color: var(--text, #F4F6FC);
+  transform: rotate(15deg) scale(1.08);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid rgba(124,58,237,.7);
+  outline-offset: 2px;
+}
+/* Mobile variant — full-width row with label */
+.theme-toggle--mobile {
+  width: 100%;
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 44px;
+  justify-content: flex-start;
+}
+.theme-toggle--mobile:hover { transform: none; }
+.theme-toggle-lbl { font-size: .875rem; font-weight: 500; }
+/* Light mode overrides */
+body[data-theme="light"] .theme-toggle {
+  border-color: rgba(100,116,139,.28);
+  background: rgba(0,0,0,.04);
+  color: #64748b;
+}
+body[data-theme="light"] .theme-toggle:hover {
+  background: rgba(0,0,0,.07);
+  border-color: rgba(100,116,139,.48);
+  color: #1e293b;
+}
+/* Icon visibility — each shows the mode you switch TO */
+body[data-theme="dark"]  .theme-icon--moon { display: none; }
+body[data-theme="dark"]  .theme-lbl--light { display: none; }
+body[data-theme="light"] .theme-icon--sun  { display: none; }
+body[data-theme="light"] .theme-lbl--dark  { display: none; }
+
 /* ---- refined elevation + accent tokens (additive) ---- */
 :root{
   --hl-top:inset 0 1px 0 rgba(255,255,255,.07);          /* lit-from-above hairline */
