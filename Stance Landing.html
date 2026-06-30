@@ -560,5 +560,108 @@
 </script>
 <script type="text/babel" src="tweaks-panel.jsx"></script>
 <script type="text/babel" src="assets/tweaks-app.jsx"></script>
+
+<!-- ===== HERO TITLE — cinematic character reveal ===== -->
+<script>
+(function () {
+  /* ---- CSS injection ---- */
+  var CSS = [
+    '.hero-title-char{',
+      'display:inline-block;',
+      'opacity:0;',
+      'filter:blur(10px);',
+      'transform:translateY(28%) scale(1.07) translateZ(0);',
+      'animation:hero-char-reveal .88s cubic-bezier(.16,1,.3,1) forwards;',
+      'animation-delay:calc(.036s * var(--ci));',
+      'will-change:transform,opacity,filter;',
+    '}',
+    /* The .grad span animates as one block so the sky→purple gradient
+       flows across the full phrase rather than per-character. */
+    '.hero-grad-reveal{',
+      'display:inline-block !important;',
+      'opacity:0;',
+      'filter:blur(10px);',
+      'transform:translateY(28%) scale(1.07) translateZ(0);',
+      'animation:hero-char-reveal .92s cubic-bezier(.16,1,.3,1) forwards;',
+      'animation-delay:var(--grad-delay,.64s);',
+    '}',
+    '@keyframes hero-char-reveal{',
+      '0%{opacity:0;filter:blur(10px);transform:translateY(28%) scale(1.07)}',
+      '55%{opacity:.65;filter:blur(3px)}',
+      '100%{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}',
+    '}',
+    '@media(prefers-reduced-motion:reduce){',
+      '.hero-title-char,.hero-grad-reveal{',
+        'opacity:1!important;transform:none!important;',
+        'filter:none!important;animation:none!important}',
+    '}'
+  ].join('');
+
+  if (!document.getElementById('hero-char-css')) {
+    var s = document.createElement('style');
+    s.id = 'hero-char-css';
+    s.textContent = CSS;
+    document.head.appendChild(s);
+  }
+
+  var storedHTML = null;
+
+  function animate() {
+    var h1 = document.querySelector('.hero h1');
+    if (!h1) return;
+
+    /* Restore clean HTML before re-animating (lang switch) */
+    if (storedHTML !== null) {
+      h1.innerHTML = storedHTML;
+    } else {
+      storedHTML = h1.innerHTML;
+    }
+
+    var charIndex = 0;
+
+    Array.from(h1.childNodes).forEach(function (node) {
+      /* ---- plain text nodes → wrap each char ---- */
+      if (node.nodeType === Node.TEXT_NODE) {
+        var text = node.textContent;
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          /* preserve newlines as-is so the line break is kept */
+          if (ch === '\n' || ch === '\r') {
+            frag.appendChild(document.createTextNode(ch));
+            continue;
+          }
+          var span = document.createElement('span');
+          span.className = 'hero-title-char';
+          span.style.setProperty('--ci', charIndex++);
+          span.textContent = ch === ' ' ? ' ' : ch;
+          frag.appendChild(span);
+        }
+        node.parentNode.replaceChild(frag, node);
+      }
+      /* ---- .grad span → animate as one block ---- */
+      else if (node.nodeType === Node.ELEMENT_NODE &&
+               node.classList.contains('grad')) {
+        var delay = (charIndex * 0.036 + 0.06).toFixed(3) + 's';
+        node.style.setProperty('--grad-delay', delay);
+        node.classList.add('hero-grad-reveal');
+      }
+    });
+  }
+
+  /* Run after DOM + i18n are ready */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', animate);
+  } else {
+    animate();
+  }
+
+  /* Re-animate after a language switch (i18n has already updated the DOM) */
+  window.addEventListener('stance:lang', function () {
+    storedHTML = null;   /* accept new translated HTML as the base */
+    animate();
+  });
+})();
+</script>
 </body>
 </html>
