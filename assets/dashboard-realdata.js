@@ -155,12 +155,53 @@
       };
     }).sort((a, b) => b.riskScore - a.riskScore);
 
+    // ── Data-driven insights (replaces canned copy when real data is loaded) ──
+    const sortedDepts = [...departments].sort((a, b) => b.risk - a.risk);
+    const topRiskDept = sortedDepts[0] || {};
+    const highestOtDept = [...departments].sort((a, b) => b.otime - a.otime)[0] || {};
+    const overtimeCount = raw.filter(e => e.OverTime === 'Yes' || e.Overtime === 'Yes').length;
+    const criticalCount = sorted.filter(e => mapRiskLevel(e['Risk Level']) === 'Critical').length;
+    const highCount     = sorted.filter(e => mapRiskLevel(e['Risk Level']) === 'High').length;
+
+    const dataInsights = [
+      {
+        sev: 'red', tag: 'Attrition · Predictive',
+        title: `${criticalCount + highCount} employees at critical or high attrition risk`,
+        body: `${criticalCount} critical and ${highCount} high-risk profiles detected across ${departments.length} departments.` +
+              (topRiskDept.name ? ` ${topRiskDept.name} carries the highest average risk score.` : '') +
+              (attritionRate ? ` Dataset attrition rate: ${attritionRate}% (${attritionCount} of ${total} employees).` : ''),
+        meta: attritionRate ? [`Attrition ${attritionRate}%`, `${total} employees`, `${departments.length} depts`] : ['Live IBM data', `${total} employees`],
+        tagFr: 'Attrition · Prédictif',
+        titleFr: `${criticalCount + highCount} employés à risque d'attrition critique ou élevé`,
+        bodyFr: `${criticalCount} profils critiques et ${highCount} à haut risque détectés dans ${departments.length} départements.` +
+                (topRiskDept.name ? ` ${topRiskDept.name} porte le score de risque moyen le plus élevé.` : '') +
+                (attritionRate ? ` Taux d'attrition du dataset : ${attritionRate} % (${attritionCount} / ${total} employés).` : ''),
+        metaFr: attritionRate ? [`Attrition ${attritionRate} %`, `${total} employés`, `${departments.length} depts`] : ['Données IBM réelles', `${total} employés`]
+      },
+      {
+        sev: 'amber', tag: 'Overtime · Load signal',
+        title: `${Math.round((overtimeCount / total) * 100)}% of workforce on overtime`,
+        body: `${overtimeCount} of ${total} employees are working overtime.` +
+              (highestOtDept.name ? ` ${highestOtDept.name} has the highest overtime rate at ${Math.round(highestOtDept.otime * 100)}%.` : '') +
+              ' Overtime is the strongest single predictor of attrition risk in this dataset.',
+        meta: [`${Math.round((overtimeCount/total)*100)}% overtime`, 'Burnout signal', 'IBM data'],
+        tagFr: 'Heures sup. · Signal de charge',
+        titleFr: `${Math.round((overtimeCount / total) * 100)} % des effectifs en heures supplémentaires`,
+        bodyFr: `${overtimeCount} des ${total} employés font des heures supplémentaires.` +
+                (highestOtDept.name ? ` ${highestOtDept.name} affiche le taux d'HS le plus élevé (${Math.round(highestOtDept.otime * 100)} %).` : '') +
+                " Les heures supplémentaires sont le plus fort prédicteur individuel du risque d'attrition dans ce dataset.",
+        metaFr: [`${Math.round((overtimeCount/total)*100)} % HS`, 'Signal épuisement', 'Données IBM']
+      },
+      ...(window.HUMIND.insights || []).slice(2)
+    ];
+
     // ── Patch HUMIND ─────────────────────────────────────────────────────────
     Object.assign(window.HUMIND, {
       employees,
       highRisk,
       departments,
       _searchEmps,
+      insights: dataInsights,
       _kpis: { total, attritionRate, avgRisk, retentionRate }
     });
 
@@ -168,9 +209,9 @@
       detail: { total, attritionRate, avgRisk, retentionRate }
     }));
 
-    console.log(`[Stance] Real data loaded — ${total} employees, attrition ${attritionRate}%, avg risk ${avgRisk}`);
+    console.log(`[Stance] IBM HR data loaded — ${total} employees, attrition ${attritionRate}%, avg risk ${avgRisk}`);
 
   } catch (err) {
-    console.warn('[Stance] Could not load Airtable data, using mock:', err.message);
+    console.warn('[Stance] Could not load real data, using mock:', err.message);
   }
 })();

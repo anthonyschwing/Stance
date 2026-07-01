@@ -24,7 +24,25 @@
       "Bash(node *)",
       "PowerShell(Start-Process \"http://localhost:3000\")",
       "PowerShell(Start-Process \"http://localhost:3000/dashboard\")",
-      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/health\" -Method Get | ConvertTo-Json)"
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/api/health\" -Method Get | ConvertTo-Json)",
+      "PowerShell(git *)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://stancehr.com\" -UseBasicParsing -TimeoutSec 10 | Select-Object StatusCode, StatusDescription)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://www.stancehr.com\" -UseBasicParsing -TimeoutSec 10 | Select-Object StatusCode, StatusDescription)",
+      "PowerShell(Receive-Job *)",
+      "PowerShell(Start-Process \"chrome\" \"--remote-debugging-port=9222 --user-data-dir=C:\\\\Users\\\\antho\\\\AppData\\\\Local\\\\Temp\\\\chrome-debug-profile\" -PassThru | Select-Object Id)",
+      "PowerShell(Invoke-RestMethod \"http://localhost:9222/json\" | ConvertTo-Json -Depth 2)",
+      "PowerShell($p = Start-Process \"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe\" \"--remote-debugging-port=9222 --headless=new --disable-gpu --no-sandbox --user-data-dir=C:\\\\Users\\\\antho\\\\AppData\\\\Local\\\\Temp\\\\chrome-debug2\" -PassThru; Start-Sleep 4; Write-Output \"PID: $\\($p.Id\\)\"; Invoke-RestMethod \"http://localhost:9222/json/version\" | ConvertTo-Json)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(mkdir -p /c/Users/antho/AppData/Local/Temp/claude/chrome-debug-profile)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222 --user-data-dir=\"C:\\\\Users\\\\antho\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\chrome-debug-profile\" --no-first-run --no-default-browser-check about:blank)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(powershell -Command 'Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { $_.Path -like '\\\\''*chrome-debug-profile*'\\\\'' } | Stop-Process -Force')",
+      "Bash(powershell -Command 'Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '\\\\''*remote-debugging-port*'\\\\'' } | Stop-Process -Force')",
+      "Bash(powershell -Command 'Get-CimInstance Win32_Process -Filter \"Name='\\\\''chrome.exe'\\\\''\" | Where-Object { $_.CommandLine -like '\\\\''*remote-debugging-port*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }')",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222 --user-data-dir=\"C:\\\\Users\\\\antho\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\chrome-debug-profile5\" --no-first-run --no-default-browser-check about:blank)"
     ]
   }
 }
