@@ -261,7 +261,8 @@ function SummaryModal({ s, onClose }) {
    This is a React component, not static HTML — there is no #ask-input/
    #ask-button/#ask-response in the DOM, and no standalone askStance()
    function. The equivalents a future restyle must not rename/remove are:
-     - className "cop-bar-input"  → the question <input> (assets/dashboard.css)
+     - className "cop-bar-input"  → the question composer, a <textarea>
+       (assets/dashboard.css) — auto-grows via the height effect above
      - className "cop-bar-form"   → <form> whose onSubmit fires send()
      - className "cop-bar-msgs"   → scrollable message-history container
      - the send() function below  → POSTs { question } to /api/ask and
@@ -295,8 +296,18 @@ function CopilotBar({ askRef }) {
   const [msgs, setMsgs] = uState([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }]);
   const [typing, setTyping] = uState(false);
   const msgsRef = uRef(null);
+  const inputRef = uRef(null);
 
   uEffect(() => { if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight; }, [msgs, typing]);
+
+  /* Auto-grow the composer textarea as the user types (up to CSS max-height,
+     which switches to internal scroll beyond that) — resets to one row after send. */
+  uEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }, [val]);
 
   /* ⚠️ send() — the Ask Stance webhook call. POST /api/ask -> server.js
      proxies to MAKE_WEBHOOK_URL -> Airtable lookup -> Claude -> structured
@@ -341,11 +352,20 @@ function CopilotBar({ askRef }) {
           </button>
         )}
       </div>
-      <form className="cop-bar-form" onSubmit={e => { e.preventDefault(); send(); }}>
-        <span className="cop-bar-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+      <div className="cop-bar-chips">
         {SUGGEST.map((s, i) => <button key={i} type="button" className="cop-bar-chip" onClick={() => send(T(s[0], s[1]))}>{T(s[0], s[1])}</button>)}
-        <input className="cop-bar-input" value={val} onChange={e => setVal(e.target.value)} placeholder={T('d.cop.ph', 'Ask about attrition, engagement, retention…')} />
-        <button type="submit" className="btn btn-primary btn-sm">{T('d.cop.ask', 'Ask')}</button>
+      </div>
+      <form className="cop-bar-form" onSubmit={e => { e.preventDefault(); send(); }}>
+        <span className="cop-bar-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+        <textarea
+          ref={inputRef}
+          className="cop-bar-input"
+          rows={1}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+          placeholder={T('d.cop.ph', 'Ask about attrition, engagement, retention…')} />
+        <button type="submit" className="btn btn-primary btn-sm" disabled={!val.trim() || typing}>{T('d.cop.ask', 'Ask')}</button>
       </form>
     </div>
   );
