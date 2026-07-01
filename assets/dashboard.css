@@ -813,12 +813,24 @@
 .cop-bar-input:focus { border-color: rgba(124,58,237,.5); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
 .cop-bar-input::placeholder { color: var(--text-4); }
 
-.cop-bar-ans {
+.cop-bar-msgs {
   max-width: 1140px; margin: 0 auto 8px;
+  max-height: min(46vh, 320px); overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding-right: 2px;
+}
+.cop-bar-msgs::-webkit-scrollbar { width: 5px; }
+.cop-bar-msgs::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+
+.cop-bar-ans {
   background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-  border-radius: var(--r-md); padding: 11px 36px 11px 14px;
+  border-radius: var(--r-md); padding: 11px 14px;
   font-size: 13px; color: var(--text-2); line-height: 1.65;
-  position: relative;
+  position: relative; max-width: 92%;
+}
+.cop-bar-ans.u {
+  background: rgba(124,58,237,.12); border-color: rgba(124,58,237,.24);
+  color: var(--text); align-self: flex-end; font-weight: 500;
 }
 .cop-bar-ans-ic {
   display: inline-flex; align-items: center; justify-content: center;
@@ -826,13 +838,14 @@
   background: rgba(124,58,237,.12); color: var(--cyan);
   margin-right: 8px; vertical-align: middle; flex-shrink: 0;
 }
-.cop-bar-x {
-  position: absolute; top: 9px; right: 10px;
+.cop-bar-clear {
+  align-self: flex-end;
   background: none; border: none; color: var(--text-4);
-  cursor: pointer; font-size: 11px; padding: 2px 4px; line-height: 1;
-  transition: color .12s;
+  cursor: pointer; font-family: var(--f-mono); font-size: 10px;
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: 2px 4px; transition: color .12s;
 }
-.cop-bar-x:hover { color: var(--text); }
+.cop-bar-clear:hover { color: var(--text); }
 
 /* push content up so it doesn't hide behind the bar */
 .content { padding-bottom: 72px; }
@@ -849,6 +862,7 @@ body[data-theme="light"] .cop-bar-chip:hover { border-color: rgba(124,58,237,.4)
 body[data-theme="light"] .cop-bar-input { background: #fff !important; border-color: var(--line-2) !important; color: var(--text) !important; }
 body[data-theme="light"] .cop-bar-input:focus { border-color: rgba(124,58,237,.5) !important; box-shadow: 0 0 0 3px rgba(124,58,237,.1) !important; }
 body[data-theme="light"] .cop-bar-ans { background: #fff !important; border-color: var(--line) !important; color: var(--text-2) !important; box-shadow: 0 -4px 20px -8px rgba(16,24,40,.08) !important; }
+body[data-theme="light"] .cop-bar-ans.u { background: rgba(124,58,237,.08) !important; border-color: rgba(124,58,237,.22) !important; color: var(--text) !important; box-shadow: none !important; }
 
 @media (max-width: 900px) {
   .cop-bar { left: 0; }

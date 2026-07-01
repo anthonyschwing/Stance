@@ -73,6 +73,34 @@ function LangSwitch() {
   );
 }
 
+/* ---------------- Theme toggle ---------------- */
+function ThemeToggle() {
+  const [theme, setTheme] = uState(() => document.body.dataset.theme || 'dark');
+  function applyTheme(t) {
+    document.body.dataset.theme = t;
+    const l = document.getElementById('themeLight');
+    if (l) l.media = t === 'light' ? 'all' : 'not all';
+    localStorage.setItem('stance-theme', t);
+    setTheme(t);
+  }
+  return (
+    <button type="button" className="theme-toggle"
+      aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      onClick={() => applyTheme(theme === 'dark' ? 'light' : 'dark')}>
+      <svg className="theme-icon theme-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg className="theme-icon theme-icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  );
+}
+
 /* ---------------- Upload modal ---------------- */
 const UPLOAD_STEPS = [['d.up.s0', 'Parsing 12,480 rows'], ['d.up.s1', 'Mapping fields & cleaning'], ['d.up.s2', 'Clustering cohorts'], ['d.up.s3', 'Scoring attrition risk'], ['d.up.s4', 'Generating insights']];
 function UploadModal({ onClose, onDone }) {
@@ -229,68 +257,61 @@ function SummaryModal({ s, onClose }) {
 }
 
 /* ---------------- Copilot dock ---------------- */
-const SUGGEST = [['d.cop.s1', 'Why is attrition rising in EMEA Sales?'], ['d.cop.s2', 'Forecast retention next quarter'], ['d.cop.s3', 'Where is burnout risk highest?'], ['d.cop.s4', 'Draft the board summary']];
-function Copilot({ onClose }) {
-  const [msgs, setMsgs] = uState([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }]);
+const SUGGEST = [['d.cop.s1', 'Why is attrition rising?'], ['d.cop.s2', 'Where is burnout risk highest?'], ['d.cop.s3', 'Forecast retention next quarter']];
+function CopilotBar({ askRef }) {
   const [val, setVal] = uState('');
+  const [msgs, setMsgs] = uState([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }]);
   const [typing, setTyping] = uState(false);
-  const endRef = uRef(null);
-  uEffect(() => {if (endRef.current) endRef.current.scrollTop = endRef.current.scrollHeight;}, [msgs, typing]);
+  const msgsRef = uRef(null);
+
+  uEffect(() => { if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight; }, [msgs, typing]);
 
   async function send(q) {
     const text = (q || val).trim();
     if (!text) return;
-    setMsgs((m) => [...m, { role: 'u', text }]);
-    setVal('');
-    setTyping(true);
+    setMsgs(m => [...m, { role: 'u', text }]);
+    setVal(''); setTyping(true);
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 60000);
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text }),
-        signal: controller.signal
-      });
-      clearTimeout(timer);
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 60000);
+      const res = await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: text }), signal: ctrl.signal });
+      clearTimeout(t);
       const data = await res.json();
       setTyping(false);
-      if (!res.ok || data.error) {
-        setMsgs((m) => [...m, { role: 'a', text: window.HUMIND.answer(text) }]);
-        return;
-      }
-      const reply = data.summary ? formatStanceResponse(data) : window.HUMIND.answer(text);
-      setMsgs((m) => [...m, { role: 'a', text: reply }]);
+      const reply = (!res.ok || data.error) ? window.HUMIND.answer(text) : (data.summary ? formatStanceResponse(data) : window.HUMIND.answer(text));
+      setMsgs(m => [...m, { role: 'a', text: reply }]);
     } catch (_) {
       setTyping(false);
-      setMsgs((m) => [...m, { role: 'a', text: window.HUMIND.answer(text) }]);
+      setMsgs(m => [...m, { role: 'a', text: window.HUMIND.answer(text) }]);
     }
   }
+
+  uEffect(() => { if (askRef) askRef.current = send; }, []);
+
   return (
-    <div className="cop-panel">
-      <div className="cop-head">
-        <span className="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg></span>
-        <div style={{ flex: 1 }}><b>Stance Copilot</b><br /><span>{window.T('d.cop.sub', 'Reading 12,480 employee records')}</span></div>
-        <button className="modal-x" onClick={onClose}>✕</button>
-      </div>
-      <div className="cop-msgs" ref={endRef}>
-        {msgs.map((m, i) =>
-        <div className={'msg ' + m.role} key={i}>
-            {m.role === 'a' && <div className="mh">Stance</div>}
+    <div className="cop-bar">
+      <div className="cop-bar-msgs" ref={msgsRef}>
+        {msgs.map((m, i) => (
+          <div className={'cop-bar-ans' + (m.role === 'u' ? ' u' : '')} key={i}>
+            {m.role === 'a' && <span className="cop-bar-ans-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>}
             {m.role === 'a' ? md(m.text) : m.text}
           </div>
+        ))}
+        {typing && <div className="cop-bar-ans"><span className="typing"><i/><i/><i/></span></div>}
+        {msgs.length > 1 && (
+          <button className="cop-bar-clear" onClick={() => setMsgs([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }])}>
+            {T('d.cop.clear', 'Clear conversation')}
+          </button>
         )}
-        {typing && <div className="msg a"><div className="mh">Stance</div><span className="typing"><i></i><i></i><i></i></span></div>}
       </div>
-      <div className="cop-sugg">
-        {SUGGEST.map((s, i) => <button key={i} onClick={() => send(window.T(s[0], s[1]))}>{window.T(s[0], s[1])}</button>)}
-      </div>
-      <form className="cop-input" onSubmit={(e) => {e.preventDefault();send();}}>
-        <input value={val} onChange={(e) => setVal(e.target.value)} placeholder={window.T('d.cop.ph', 'Ask about attrition, engagement, retention…')} />
-        <button type="submit" className="btn btn-primary btn-sm">{window.T('d.cop.ask', 'Ask')}</button>
+      <form className="cop-bar-form" onSubmit={e => { e.preventDefault(); send(); }}>
+        <span className="cop-bar-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+        {SUGGEST.map((s, i) => <button key={i} type="button" className="cop-bar-chip" onClick={() => send(T(s[0], s[1]))}>{T(s[0], s[1])}</button>)}
+        <input className="cop-bar-input" value={val} onChange={e => setVal(e.target.value)} placeholder={T('d.cop.ph', 'Ask about attrition, engagement, retention…')} />
+        <button type="submit" className="btn btn-primary btn-sm">{T('d.cop.ask', 'Ask')}</button>
       </form>
-    </div>);
-
+    </div>
+  );
 }
 
 /* ---------------- SearchBar ---------------- */
@@ -409,10 +430,10 @@ function App() {
   });
   const [selectedEmpId, setSelectedEmpId] = uState(null);
   const [upload, setUpload] = uState(false);
-  const [copilot, setCopilot] = uState(false);
   const [summary, setSummary] = uState(null);
   const [toast, setToast] = uState(null);
   const [sideOpen, setSideOpen] = uState(false);
+  const copilotAsk = uRef(null);
   const [, setLang] = uState(0);
   uEffect(() => {
     const h = () => setLang(n => n + 1);
@@ -432,7 +453,10 @@ function App() {
   }, [t.density, t.accent]);
 
   function showToast(msg) {setToast(msg);setTimeout(() => setToast(null), 3200);}
-  function openInsight(it) {setCopilot(true);}
+  function openInsight(it) {
+    const q = T('d.cop.insightQ', 'Tell me more about') + ': ' + it.title;
+    if (copilotAsk.current) copilotAsk.current(q);
+  }
 
   const views = {
     overview: <OverviewView openInsight={openInsight} openSummary={setSummary} onNav={setView} />,
@@ -483,6 +507,7 @@ function App() {
           </div>
           <SearchBar onNav={(v, id) => { setSelectedEmpId(id); setView(v); }} />
           <LangSwitch />
+          <ThemeToggle />
           <div className="density-toggle">
             <button className={t.density === 'calm' ? 'on' : ''} onClick={() => setTweak('density', 'calm')}>{T('d.density.calm', 'Calm')}</button>
             <button className={t.density === 'cockpit' ? 'on' : ''} onClick={() => setTweak('density', 'cockpit')}>{T('d.density.cockpit', 'Cockpit')}</button>
@@ -495,13 +520,7 @@ function App() {
         <div className="content">{views[view]}</div>
       </div>
 
-      {!copilot &&
-      <button className="cop-fab" onClick={() => setCopilot(true)}>
-          <span className="ci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg></span>
-          {T('d.fab', 'Ask Stance')}
-        </button>
-      }
-      {copilot && <Copilot onClose={() => setCopilot(false)} />}
+      <CopilotBar askRef={copilotAsk} />
 
       {upload && <UploadModal onClose={() => setUpload(false)} onDone={() => {setUpload(false);showToast(T('d.up.toast', 'Analysis complete · 7 new signals detected'));setView('overview');}} />}
       {summary && <SummaryModal s={summary} onClose={() => setSummary(null)} />}
