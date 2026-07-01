@@ -30,7 +30,7 @@ function KPI({ label, value, unit, delta, deltaType = 'up', spark, sparkColor, a
     <div className={'kpi dkpi' + (big ? ' lg' : '')}>
       <div className="klabel">{label}</div>
       <div className="kval-row">
-        <div className="kval" style={accent ? { color: accent } : null}>
+        <div className="kval metric-val" style={accent ? { color: accent } : null}>
           {value}{unit && <span style={{ fontSize: 15, color: 'var(--text-3)' }}>{unit}</span>}
         </div>
         {spark && <Sparkline values={spark} color={sparkColor || 'var(--cyan)'} />}

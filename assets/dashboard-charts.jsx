@@ -79,7 +79,7 @@ function Gauge({ value, max = 100, label = 'Risk Index', size = 132, colorFrom =
         <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={colorFrom} /><stop offset="100%" stopColor={colorTo} /></linearGradient></defs>
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center', textAlign: 'center' }}>
-        <b style={{ fontFamily: 'var(--f-display)', fontSize: size * 0.27, fontWeight: 700, lineHeight: 1 }}>{Math.round(disp)}</b>
+        <b className="metric-val" style={{ fontFamily: 'var(--f-display)', fontSize: size * 0.27, fontWeight: 700, lineHeight: 1 }}>{Math.round(disp)}</b>
         <span style={{ fontFamily: 'var(--f-mono)', fontSize: 9, letterSpacing: '.2em', color: 'var(--text-3)', textTransform: 'uppercase' }}>{label}</span>
       </div>
     </div>

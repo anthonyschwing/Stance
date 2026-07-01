@@ -312,6 +312,7 @@
     'bf.gauge':             'Score de Santé de la Workforce',
     'bf.healthStatus':      'Sain · en amélioration',
     'bf.narr':              "Le risque est concentré, pas systémique — 2 unités sur 14 concentrent 64 % des départs projetés. Agir maintenant protège ~1,4 M€ de coûts de remplacement.",
+    'bf.execTitle':         'Synthèse exécutive',
     'bf.confSub':           'Fiabilité du briefing',
     'bf.confTitle':         'Confiance IA',
     'bf.conf1':             "Confiance de l'analyse",
