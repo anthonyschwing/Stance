@@ -201,3 +201,33 @@
   .ck-kpis,.factor-grid{grid-template-columns:1fr}
   .pc-ovr b{font-size:40px}
 }
+
+/* ---- Mobile overflow hardening (375–640px) ---- */
+@media(max-width:640px){
+  /* Cockpit: tighter internal padding */
+  .cockpit-grid{padding:12px}
+
+  /* Radar: never exceed container width */
+  .radar-stage,.radar-wrap{width:min(300px,100%);height:min(300px,100%)}
+
+  /* Health block: stack gauge + meta on very small screens */
+  .ck-health{flex-wrap:wrap;gap:12px}
+  .ck-meta .ck-big{font-size:32px}
+
+  /* Player card score: prevent overflow */
+  .pc-ovr b{font-size:36px}
+
+  /* Stat rows: allow label to wrap */
+  .stat-row{grid-template-columns:80px 1fr 28px;gap:8px}
+  .sr-lab{white-space:normal;font-size:11px}
+
+  /* Scout chips: wrap instead of overflowing */
+  .scout-roster{flex-wrap:wrap}
+
+  /* Rec rows: prevent long text from pushing layout */
+  .rec-row .rt,.rec-row .ri{word-break:break-word}
+
+  /* Action rows: ensure content doesn't overflow */
+  .ar-main{min-width:0}
+  .ar-t,.ar-i{word-break:break-word}
+}

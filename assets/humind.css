@@ -561,6 +561,32 @@ html.anim .reveal.d4{transition-delay:.32s}
   html.anim .reveal.in{transform:none !important}
 }
 
+/* ===========================================================================
+   HERO DASHBOARD MOCKUP — prevent horizontal overflow at all mobile widths
+   These fix elements that can exceed the stage-frame width at ≤640px.
+   Desktop layout is strictly untouched.
+   =========================================================================== */
+@media(max-width:640px){
+  /* Stage frame: guarantee it never exceeds viewport */
+  .stage-frame{max-width:100%;overflow-x:hidden}
+
+  /* Stage top bar: truncate URL text instead of overflowing */
+  .stage-url{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Panel header: let the seg (12M/1Y/3Y) drop to a second line */
+  .panel-h{flex-wrap:wrap;gap:6px}
+  .panel-h>div:first-child{flex:1 1 auto;min-width:0}
+  .panel-title{font-size:15px}
+
+  /* Copilot bar: input must be allowed to shrink below browser default */
+  .copilot input{min-width:0}
+
+  /* exec-scores: ensure numbers don't force horizontal scroll */
+  .exec-big{flex-wrap:wrap;gap:4px}
+  .exec-big b{font-size:32px}
+  .exec-tag{margin-left:0}
+}
+
 /* Touch devices: neutralise hover-lift transforms (sticky :hover causes jitter) */
 @media(hover:none){
   .btn:hover,.bcard:hover,.btn-primary:hover,.btn-ghost:hover{transform:none}
