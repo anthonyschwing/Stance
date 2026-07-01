@@ -260,45 +260,58 @@ function SummaryModal({ s, onClose }) {
 /* ⚠️ ASK STANCE — CRITICAL LOGIC, LIVE MAKE WEBHOOK
    This is a React component, not static HTML — there is no #ask-input/
    #ask-button/#ask-response in the DOM, and no standalone askStance()
-   function. The equivalents a future restyle must not rename/remove are:
-     - className "cop-bar-input"  → the question composer, a <textarea>
-       (assets/dashboard.css) — auto-grows via the height effect above
-     - className "cop-bar-form"   → <form> whose onSubmit fires send()
-     - className "cop-bar-msgs"   → scrollable message-history container
-     - the send() function below  → POSTs { question } to /api/ask and
+   function. Lateral FAB + panel (reverted 2026-07-01 from a full-width
+   bottom bar that was reported too imposing). The equivalents a future
+   restyle must not rename/remove are:
+     - className "cop-fab"    → closed-state floating toggle button
+     - className "cop-panel"  → the open chat panel
+     - className "cop-msgs"   → scrollable message-history container
+     - className "cop-input"  → <form> wrapping the composer; the
+       <textarea> inside it auto-grows via the height effect below
+     - the send() function below → POSTs { question } to /api/ask and
        pushes { role:'a'|'u', text } into msgs[]
    A pure CSS/visual pass may restyle these classes (colors, spacing,
    animation) freely, but must NOT rename them, remove them from the
-   JSX below, or wrap them in a way that breaks the onSubmit/onChange
-   wiring — doing so silently kills the whole Ask Stance feature.
+   JSX below, or wrap them in a way that breaks the onSubmit/onChange/
+   onClick wiring — doing so silently kills the whole Ask Stance feature.
 
-   🔒 2026-07-01 INCIDENT: the code above was never the problem. After a
-   production deploy to Vercel (stanceai/stance-svft), Ask Stance replied
-   with a generic fallback (window.HUMIND.answer()) instead of a real
-   Claude/Airtable answer. Root cause: `vercel env ls` showed ZERO
-   environment variables configured on Vercel — MAKE_WEBHOOK_URL /
-   AIRTABLE_API_KEY / AIRTABLE_BASE_ID exist only in the local .env
-   (gitignored, never uploaded by `vercel deploy`). server.js's own
-   guard (`if (!MAKE_WEBHOOK_URL) return res.status(503)`) fired before
-   Make was ever called, and the frontend's error fallback masked it as
-   a "working but generic" reply instead of an obvious failure.
-   Pipeline: input.cop-bar-input -> form.cop-bar-form onSubmit -> send()
-   -> POST /api/ask -> server.js -> Make webhook -> Airtable -> Claude
-   -> { summary, risk_level, recommendations, confidence_score } ->
-   pushed into msgs[] -> rendered in .cop-bar-msgs.
+   🔒 2026-07-01 INCIDENT #1: after a production deploy to Vercel
+   (stanceai/stance-svft), Ask Stance replied with a generic fallback
+   (window.HUMIND.answer()) instead of a real Claude/Airtable answer.
+   Root cause: `vercel env ls` showed ZERO environment variables
+   configured on Vercel — MAKE_WEBHOOK_URL / AIRTABLE_API_KEY /
+   AIRTABLE_BASE_ID exist only in the local .env (gitignored, never
+   uploaded by `vercel deploy`). server.js's own guard
+   (`if (!MAKE_WEBHOOK_URL) return res.status(503)`) fired before Make
+   was ever called, and the frontend's error fallback masked it as a
+   "working but generic" reply instead of an obvious failure.
+   Pipeline: textarea (in .cop-input) -> form.cop-input onSubmit ->
+   send() -> POST /api/ask -> server.js -> Make webhook -> Airtable ->
+   Claude -> { summary, risk_level, recommendations, confidence_score }
+   -> pushed into msgs[] -> rendered in .cop-msgs.
    BEFORE calling this "broken" again: run `vercel env ls` on the
    target project and confirm AIRTABLE_API_KEY / AIRTABLE_BASE_ID /
    AIRTABLE_*_TABLE / MAKE_WEBHOOK_URL / MAKE_CSV_WEBHOOK_URL are all
-   present for BOTH Production and Preview before touching any code. */
+   present for BOTH Production and Preview before touching any code.
+
+   🔒 2026-07-01 INCIDENT #2: a separate dev-only "Design tweaks" panel
+   (density/accent controls) rendered a floating purple circular button
+   at bottom-right, z-index 9000, directly above/near this component —
+   visually close enough to the real Ask/FAB button that real users
+   clicked it expecting Ask Stance to respond. It was removed from the
+   production render (see App() below) — if a similar floating button
+   reappears near this one, check what it actually is before assuming
+   Ask Stance itself is broken. */
 const SUGGEST = [['d.cop.s1', 'Why is attrition rising?'], ['d.cop.s2', 'Where is burnout risk highest?'], ['d.cop.s3', 'Forecast retention next quarter']];
 function CopilotBar({ askRef }) {
+  const [open, setOpen] = uState(false);
   const [val, setVal] = uState('');
   const [msgs, setMsgs] = uState([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }]);
   const [typing, setTyping] = uState(false);
   const msgsRef = uRef(null);
   const inputRef = uRef(null);
 
-  uEffect(() => { if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight; }, [msgs, typing]);
+  uEffect(() => { if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight; }, [msgs, typing, open]);
 
   /* Auto-grow the composer textarea as the user types (up to CSS max-height,
      which switches to internal scroll beyond that) — resets to one row after send. */
@@ -307,7 +320,7 @@ function CopilotBar({ askRef }) {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
-  }, [val]);
+  }, [val, open]);
 
   /* ⚠️ send() — the Ask Stance webhook call. POST /api/ask -> server.js
      proxies to MAKE_WEBHOOK_URL -> Airtable lookup -> Claude -> structured
@@ -334,32 +347,46 @@ function CopilotBar({ askRef }) {
     }
   }
 
-  uEffect(() => { if (askRef) askRef.current = send; }, []);
+  uEffect(() => {
+    if (askRef) askRef.current = (q) => { setOpen(true); send(q); };
+  }, []);
+
+  if (!open) {
+    return (
+      <button className="cop-fab" onClick={() => setOpen(true)}>
+        <span className="ci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+        {T('d.fab', 'Ask Stance')}
+      </button>
+    );
+  }
 
   return (
-    <div className="cop-bar">
-      <div className="cop-bar-msgs" ref={msgsRef}>
+    <div className="cop-panel">
+      <div className="cop-head">
+        <span className="ci"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+        <div style={{ flex: 1 }}><b>Stance Copilot</b><br/><span>{T('d.cop.sub', 'Reading 12,480 employee records')}</span></div>
+        <button className="modal-x" onClick={() => setOpen(false)}>✕</button>
+      </div>
+      <div className="cop-msgs" ref={msgsRef}>
         {msgs.map((m, i) => (
-          <div className={'cop-bar-ans' + (m.role === 'u' ? ' u' : '')} key={i}>
-            {m.role === 'a' && <span className="cop-bar-ans-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>}
+          <div className={'msg ' + m.role} key={i}>
+            {m.role === 'a' && <div className="mh">Stance</div>}
             {m.role === 'a' ? md(m.text) : m.text}
           </div>
         ))}
-        {typing && <div className="cop-bar-ans"><span className="typing"><i/><i/><i/></span></div>}
+        {typing && <div className="msg a"><div className="mh">Stance</div><span className="typing"><i/><i/><i/></span></div>}
         {msgs.length > 1 && (
-          <button className="cop-bar-clear" onClick={() => setMsgs([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }])}>
+          <button className="cop-msgs-clear" onClick={() => setMsgs([{ role: 'a', text: window.T('d.cop.greeting', "Hi — I'm your Stance Copilot. Ask me anything about your workforce data and I'll answer with sources.") }])}>
             {T('d.cop.clear', 'Clear conversation')}
           </button>
         )}
       </div>
-      <div className="cop-bar-chips">
-        {SUGGEST.map((s, i) => <button key={i} type="button" className="cop-bar-chip" onClick={() => send(T(s[0], s[1]))}>{T(s[0], s[1])}</button>)}
+      <div className="cop-sugg">
+        {SUGGEST.map((s, i) => <button key={i} type="button" onClick={() => send(T(s[0], s[1]))}>{T(s[0], s[1])}</button>)}
       </div>
-      <form className="cop-bar-form" onSubmit={e => { e.preventDefault(); send(); }}>
-        <span className="cop-bar-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg></span>
+      <form className="cop-input" onSubmit={e => { e.preventDefault(); send(); }}>
         <textarea
           ref={inputRef}
-          className="cop-bar-input"
           rows={1}
           value={val}
           onChange={e => setVal(e.target.value)}

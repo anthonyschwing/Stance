@@ -775,117 +775,38 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Copilot bar — single fixed line at bottom of content area
-   ⚠️ ASK STANCE — live Make webhook. .cop-bar-input / .cop-bar-form /
-   .cop-bar-msgs / .cop-bar-ans are targeted by CopilotBar in
+   Copilot — lateral FAB + panel (reverted from a full-width bottom
+   bar, which was reported as too imposing for a feature that should
+   stay compact until invited open).
+   ⚠️ ASK STANCE — live Make webhook. .cop-fab / .cop-panel / .cop-msgs
+   / .cop-input (textarea) / .msg are targeted by CopilotBar in
    assets/dashboard-app.jsx. Restyle freely, but do not rename or
    remove these classNames — that silently breaks the feature.
    ══════════════════════════════════════════════════════════════ */
-.cop-bar {
-  position: fixed; bottom: 0;
-  left: var(--side-w, 224px); right: 0; z-index: 200;
-  padding: 12px 24px 16px;
-  background: rgba(9,12,22,.94);
-  border-top: 1px solid rgba(255,255,255,.06);
-  backdrop-filter: blur(20px) saturate(140%);
+.cop-input textarea {
+  flex: 1; background: var(--surface-2);
+  border: 1px solid var(--line-2); border-radius: 10px;
+  color: var(--text); font-family: var(--f-body); font-size: 14px; line-height: 1.5;
+  padding: 10px 13px; outline: none; resize: none;
+  min-height: 40px; max-height: 120px; overflow-y: auto;
+  transition: border-color .15s;
 }
-.cop-bar-chips {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  max-width: 1140px; margin: 0 auto 8px;
+.cop-input textarea:focus { border-color: rgba(124,58,237,.4); }
+.cop-input .btn {
+  flex-shrink: 0; align-self: flex-end; height: 40px;
 }
-.cop-bar-form {
-  display: flex; align-items: flex-end; gap: 10px;
-  max-width: 1140px; margin: 0 auto;
-}
-.cop-bar-ic {
-  flex-shrink: 0; color: var(--cyan);
-  width: 36px; height: 44px; border-radius: 10px;
-  background: rgba(124,58,237,.12);
-  display: grid; place-items: center;
-}
-.cop-bar-chip {
-  font-family: var(--f-mono); font-size: 11.5px; white-space: nowrap;
-  padding: 7px 13px; border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.1);
-  background: rgba(255,255,255,.04); color: var(--text-3); cursor: pointer;
-  transition: background .15s, border-color .15s, color .15s;
-}
-.cop-bar-chip:hover { border-color: rgba(124,58,237,.4); color: var(--text); background: rgba(124,58,237,.08); }
-.cop-bar-input {
-  flex: 1; background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1); border-radius: var(--r-lg);
-  padding: 13px 16px; font-family: var(--f-body); font-size: 15px; line-height: 1.5;
-  color: var(--text); outline: none; min-width: 0;
-  resize: none; min-height: 48px; max-height: 168px; overflow-y: auto;
-  transition: border-color .15s, box-shadow .15s;
-}
-.cop-bar-input:focus { border-color: rgba(124,58,237,.5); box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
-.cop-bar-input::placeholder { color: var(--text-4); }
-.cop-bar-form .btn {
-  flex-shrink: 0; align-self: flex-end;
-  height: 48px; padding: 0 22px; font-size: 14px; border-radius: var(--r-lg);
-}
-.cop-bar-form .btn:disabled { opacity: .45; cursor: not-allowed; }
-
-.cop-bar-msgs {
-  max-width: 1140px; margin: 0 auto 8px;
-  max-height: min(46vh, 320px); overflow-y: auto;
-  display: flex; flex-direction: column; gap: 8px;
-  padding-right: 2px;
-}
-.cop-bar-msgs::-webkit-scrollbar { width: 5px; }
-.cop-bar-msgs::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
-
-.cop-bar-ans {
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
-  border-radius: var(--r-md); padding: 11px 14px;
-  font-size: 13px; color: var(--text-2); line-height: 1.65;
-  position: relative; max-width: 92%;
-}
-.cop-bar-ans.u {
-  background: rgba(124,58,237,.12); border-color: rgba(124,58,237,.24);
-  color: var(--text); align-self: flex-end; font-weight: 500;
-}
-.cop-bar-ans-ic {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; border-radius: 5px;
-  background: rgba(124,58,237,.12); color: var(--cyan);
-  margin-right: 8px; vertical-align: middle; flex-shrink: 0;
-}
-.cop-bar-clear {
+.cop-input .btn:disabled { opacity: .45; cursor: not-allowed; }
+.cop-msgs-clear {
   align-self: flex-end;
   background: none; border: none; color: var(--text-4);
   cursor: pointer; font-family: var(--f-mono); font-size: 10px;
   letter-spacing: .06em; text-transform: uppercase;
   padding: 2px 4px; transition: color .12s;
 }
-.cop-bar-clear:hover { color: var(--text); }
+.cop-msgs-clear:hover { color: var(--text); }
 
-/* push content up so it doesn't hide behind the bar */
-.content { padding-bottom: 132px; }
-
-/* light mode */
-body[data-theme="light"] .cop-bar {
-  background: rgba(255,255,255,.92) !important;
-  border-top-color: var(--line) !important;
-}
-body[data-theme="light"] .cop-bar-chip {
-  background: rgba(13,24,43,.03) !important; border-color: var(--line-2) !important; color: var(--text-3) !important;
-}
-body[data-theme="light"] .cop-bar-chip:hover { border-color: rgba(124,58,237,.4) !important; color: var(--text) !important; background: rgba(124,58,237,.06) !important; }
-body[data-theme="light"] .cop-bar-input { background: #fff !important; border-color: var(--line-2) !important; color: var(--text) !important; }
-body[data-theme="light"] .cop-bar-input:focus { border-color: rgba(124,58,237,.5) !important; box-shadow: 0 0 0 3px rgba(124,58,237,.1) !important; }
-body[data-theme="light"] .cop-bar-ans { background: #fff !important; border-color: var(--line) !important; color: var(--text-2) !important; box-shadow: 0 -4px 20px -8px rgba(16,24,40,.08) !important; }
-body[data-theme="light"] .cop-bar-ans.u { background: rgba(124,58,237,.08) !important; border-color: rgba(124,58,237,.22) !important; color: var(--text) !important; box-shadow: none !important; }
-
-@media (max-width: 900px) {
-  .cop-bar { left: 0; }
-  .cop-bar-chips { display: none; }
-}
 @media (max-width: 640px) {
-  .cop-bar { padding: 10px 14px 14px; }
-  .cop-bar-input { font-size: 16px; } /* prevents iOS auto-zoom on focus */
-  .content { padding-bottom: 150px; }
+  .cop-input textarea { font-size: 16px; } /* prevents iOS auto-zoom on focus */
 }
 
 /* ══════════════════════════════════════════════════════════════

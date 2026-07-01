@@ -222,7 +222,7 @@ body{background:#F5F7FA;color:var(--text)}
 .msg.u{color:#fff;background:var(--ink-brand)}
 .cop-sugg button{background:#fff;border-color:var(--line-2);color:var(--text-2)}
 .cop-sugg button:hover{border-color:rgba(124,58,237,.4);color:var(--text)}
-.cop-input input{background:#fff;border-color:var(--line-2);color:var(--text)}
+.cop-input textarea{background:#fff;border-color:var(--line-2);color:var(--text)}
 .cop-head span{color:var(--text-3)}
 
 .toast{background:#fff;border-color:rgba(16,147,107,.4);box-shadow:var(--sh-soft);color:var(--text)}
