@@ -390,6 +390,8 @@
     'nav.signin':   'Connexion',
     'nav.demo':     'Demander une démo',
     'nav.lang':     'Langue',
+    'nav.lightmode': 'Mode clair',
+    'nav.darkmode':  'Mode sombre',
 
     /* ---- hero ---- */
     'hero.pill':  'Intelligence RH Executive',
@@ -477,7 +479,7 @@
 
     /* ---- final CTA ---- */
     'cta.eyebrow': 'Intelligence RH Executive',
-    'cta.h2':      'Pilotez la stratégie RH avec <span class="grad">un aide à la décision, pas des tableaux de bord.</span>',
+    'cta.h2':      'Pilotez la stratégie RH avec <span class="grad">une aide à la décision.</span>',
     'cta.lead':    "Rejoignez les équipes de direction qui utilisent Stance pour anticiper les risques RH, agir sur les recommandations IA et décider avec confiance — des trimestres à l'avance.",
     'cta.see':     'Voir Stance en action',
     'cta.demo':    'Demander une démo',

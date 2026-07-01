@@ -369,7 +369,7 @@
   <div class="wrap">
     <div class="cta-final reveal">
       <span class="eyebrow" data-i18n="cta.eyebrow">Executive Workforce Intelligence</span>
-      <h2 style="margin-top:16px" data-i18n-html="cta.h2">Lead workforce strategy with <span class="grad">decision support, not dashboards.</span></h2>
+      <h2 style="margin-top:16px" data-i18n-html="cta.h2">Lead workforce strategy with <span class="grad">decision support.</span></h2>
       <p class="lead" data-i18n="cta.lead">Join the leadership teams using Stance to forecast workforce risk, act on AI recommendations, and decide with confidence — quarters ahead.</p>
       <div class="hero-cta">
         <a class="btn btn-primary btn-lg" href="/dashboard" data-i18n="cta.see">See Stance in Action</a>
@@ -692,6 +692,103 @@
     storedHTML = null;   /* accept new translated HTML as the base */
     animate();
   });
+})();
+</script>
+
+<script>
+/* CountAnimation — vanilla JS, IntersectionObserver threshold 0.2, 1.5s ease-out cubic.
+   Covers all static numeric <b> elements across the page.
+   Synchronous strip of data-count on hero KPIs prevents double-animation with landing.js. */
+(function () {
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Runs NOW (body fully parsed, DOMContentLoaded not yet fired): strip data-count from hero
+     elements so landing.js animateCount finds nothing there and won't conflict. */
+  document.querySelectorAll('.exec-big [data-count]').forEach(function (el) {
+    el.dataset.countAnim = el.getAttribute('data-count');
+    el.removeAttribute('data-count');
+  });
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function countUp(el, to, dec, pre, suf) {
+    if (reduceMotion) { el.textContent = pre + to.toFixed(dec) + suf; return; }
+    var t0 = null;
+    el.textContent = pre + (0).toFixed(dec) + suf;
+    function tick(ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min((ts - t0) / 1500, 1);
+      el.textContent = pre + (easeOut(p) * to).toFixed(dec) + suf;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function observe(el, to, dec, pre, suf) {
+    if (el.dataset.caWatched) return;
+    el.dataset.caWatched = '1';
+    if (reduceMotion) { el.textContent = pre + to.toFixed(dec) + suf; return; }
+    var io = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      io.disconnect();
+      countUp(el, to, dec, pre, suf);
+    }, { threshold: 0.2 });
+    io.observe(el);
+  }
+
+  /* Parse a <b> textContent as a countable value.
+     Flexible regex: optional sign + leading number + everything after as suffix.
+     Auto-skips non-numeric text ("EMEA Sales", "explainable", "−$4.2M", etc.). */
+  function parseBold(el) {
+    if (el.dataset.caWatched) return null;
+    var raw = el.textContent.trim();
+    var m = raw.match(/^([+\-]?)(\d+(?:\.\d+)?)([\s\S]*)$/);
+    if (!m) return null;
+    var num = parseFloat(m[2]);
+    if (isNaN(num) || num === 0) return null;
+    return { to: num, dec: m[2].indexOf('.') >= 0 ? m[2].split('.')[1].length : 0, pre: m[1], suf: m[3] };
+  }
+
+  function init() {
+    /* 1. Hero KPIs: 78 (Health Score) + 62 (Risk Index) */
+    document.querySelectorAll('.exec-big [data-count-anim]').forEach(function (el) {
+      var to = parseFloat(el.dataset.countAnim);
+      if (isNaN(to)) return;
+      observe(el, to, 0, '', '');
+    });
+
+    /* 2. All key numeric <b> containers — regex auto-skips non-numeric content. */
+    [
+      '.uc-stat > b',   // 91.4% · 42% · 14 · 24mo · 2 of 14
+      '#confVal',       // 87% AI confidence
+      '.stepc .meta b', // 40+ connectors
+      '.exec-narr b',   // 140 roles · 2 of 14 units (static, i18n already applied)
+      '.ask-rrow b',    // 12% below market · 8 pts · 2.4× (default Q0 chip state)
+    ].forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        var c = parseBold(el);
+        if (!c) return;
+        observe(el, c.to, c.dec, c.pre, c.suf);
+      });
+    });
+
+    /* 3. Non-hero [data-count] hook for future values added to HTML:
+          <b data-count="74" data-count-suf="/100">74</b>
+          <b data-count="18" data-count-pre="+" data-count-suf="%">+18%</b> */
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      if (el.closest('#hero')) return;
+      var to = parseFloat(el.getAttribute('data-count'));
+      if (isNaN(to)) return;
+      var dec = parseInt(el.getAttribute('data-count-dec') || '0', 10);
+      var pre = el.getAttribute('data-count-pre') || '';
+      var suf = el.getAttribute('data-count-suf') || '';
+      observe(el, to, dec, pre, suf);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
 })();
 </script>
 </body>

@@ -187,7 +187,7 @@ a{color:inherit;text-decoration:none}
 .brand .ph{display:none}
 .brand .ph{font-size:9px;font-family:var(--f-mono);color:var(--text-4);letter-spacing:.1em;margin-left:2px;align-self:flex-end;padding-bottom:3px}
 .nav-links{display:flex;gap:6px;margin-left:8px}
-.nav-links a{font-size:14px;color:var(--text-2);padding:8px 13px;border-radius:9px;transition:color .2s,background .2s}
+.nav-links a{font-size:14px;color:var(--text-2);padding:8px 13px;border-radius:9px;transition:color .2s,background .2s;white-space:nowrap}
 .nav-links a:hover{color:var(--text);background:var(--surface-2)}
 .nav-cta{margin-left:auto;display:flex;align-items:center;gap:10px}
 .nav-ghost{font-size:14px;color:var(--text-2);padding:9px 14px;border-radius:999px;transition:color .2s}
@@ -453,7 +453,7 @@ body[data-hero="centered"] .hero-stage{margin-top:60px}
 .stat:first-child{border-left:none}
 .stat b{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,3vw,40px);letter-spacing:-.02em;display:block}
 .stat span{font-size:13px;color:var(--text-3);margin-top:5px;display:block}
-@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.stat:nth-child(odd){border-left:none}.price-grid{grid-template-columns:1fr}.insight-grid{grid-template-columns:1fr}.exec{grid-template-columns:1fr}.show-grid{grid-template-columns:1fr}.show-nav{flex-direction:row;overflow-x:auto}.nav-links{display:none}}
+@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.stat:nth-child(odd){border-left:none}.price-grid{grid-template-columns:1fr}.insight-grid{grid-template-columns:1fr}.exec{grid-template-columns:1fr}.show-grid{grid-template-columns:1fr}.show-nav{flex-direction:row;overflow-x:auto}}
 
 /* ----------------------------- FOOTER ---------------------------------- */
 .foot{border-top:1px solid var(--line);padding:56px 0 40px;margin-top:40px}
@@ -491,22 +491,24 @@ html.anim .reveal.d4{transition-delay:.32s}
    RESPONSIVE — tablet & mobile (desktop is the reference, untouched)
    =========================================================================== */
 
-/* Tablet (768–1023px) — compact navbar spacing, balanced hero */
+/* Tablet (768–1023px) — hamburger nav (FR labels don't fit inline at this width), balanced hero */
 @media(max-width:1023px){
-  .nav-in{gap:18px}
-  .nav-links{margin-left:2px}
-  .nav-links a{padding:8px 10px}
-  .nav-cta{gap:8px}
-  body[data-hero="split"] .hero-grid{gap:32px}
-}
-
-/* Mobile (≤767px) — hamburger nav, stacked & centered hero, scrollable chips */
-@media(max-width:767px){
-  /* nav → hamburger */
   .nav-links,.nav-cta{display:none}
   .nav-burger{display:flex;margin-left:auto}
   .nav-in{height:62px}
+  body[data-hero="split"] .hero-grid{gap:32px}
+}
 
+/* Small desktop (1024–1200px) — tighten spacing so FR nav labels stay on one line */
+@media(min-width:1024px) and (max-width:1200px){
+  .nav-in{gap:16px}
+  .nav-links{gap:2px;margin-left:0}
+  .nav-links a{padding:8px 9px;font-size:13.5px}
+  .nav-cta{gap:8px}
+}
+
+/* Mobile (≤767px) — stacked & centered hero, scrollable chips */
+@media(max-width:767px){
   /* hero stacks, centered, headline → CTA → preview */
   .hero{padding-top:96px;padding-bottom:24px}
   body[data-hero="split"] .hero-grid,.hero-grid{grid-template-columns:1fr;text-align:center;gap:34px}
