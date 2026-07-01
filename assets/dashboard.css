@@ -776,6 +776,10 @@
 
 /* ══════════════════════════════════════════════════════════════
    Copilot bar — single fixed line at bottom of content area
+   ⚠️ ASK STANCE — live Make webhook. .cop-bar-input / .cop-bar-form /
+   .cop-bar-msgs / .cop-bar-ans are targeted by CopilotBar in
+   assets/dashboard-app.jsx. Restyle freely, but do not rename or
+   remove these classNames — that silently breaks the feature.
    ══════════════════════════════════════════════════════════════ */
 .cop-bar {
   position: fixed; bottom: 0;

@@ -257,6 +257,38 @@ function SummaryModal({ s, onClose }) {
 }
 
 /* ---------------- Copilot dock ---------------- */
+/* ⚠️ ASK STANCE — CRITICAL LOGIC, LIVE MAKE WEBHOOK
+   This is a React component, not static HTML — there is no #ask-input/
+   #ask-button/#ask-response in the DOM, and no standalone askStance()
+   function. The equivalents a future restyle must not rename/remove are:
+     - className "cop-bar-input"  → the question <input> (assets/dashboard.css)
+     - className "cop-bar-form"   → <form> whose onSubmit fires send()
+     - className "cop-bar-msgs"   → scrollable message-history container
+     - the send() function below  → POSTs { question } to /api/ask and
+       pushes { role:'a'|'u', text } into msgs[]
+   A pure CSS/visual pass may restyle these classes (colors, spacing,
+   animation) freely, but must NOT rename them, remove them from the
+   JSX below, or wrap them in a way that breaks the onSubmit/onChange
+   wiring — doing so silently kills the whole Ask Stance feature.
+
+   🔒 2026-07-01 INCIDENT: the code above was never the problem. After a
+   production deploy to Vercel (stanceai/stance-svft), Ask Stance replied
+   with a generic fallback (window.HUMIND.answer()) instead of a real
+   Claude/Airtable answer. Root cause: `vercel env ls` showed ZERO
+   environment variables configured on Vercel — MAKE_WEBHOOK_URL /
+   AIRTABLE_API_KEY / AIRTABLE_BASE_ID exist only in the local .env
+   (gitignored, never uploaded by `vercel deploy`). server.js's own
+   guard (`if (!MAKE_WEBHOOK_URL) return res.status(503)`) fired before
+   Make was ever called, and the frontend's error fallback masked it as
+   a "working but generic" reply instead of an obvious failure.
+   Pipeline: input.cop-bar-input -> form.cop-bar-form onSubmit -> send()
+   -> POST /api/ask -> server.js -> Make webhook -> Airtable -> Claude
+   -> { summary, risk_level, recommendations, confidence_score } ->
+   pushed into msgs[] -> rendered in .cop-bar-msgs.
+   BEFORE calling this "broken" again: run `vercel env ls` on the
+   target project and confirm AIRTABLE_API_KEY / AIRTABLE_BASE_ID /
+   AIRTABLE_*_TABLE / MAKE_WEBHOOK_URL / MAKE_CSV_WEBHOOK_URL are all
+   present for BOTH Production and Preview before touching any code. */
 const SUGGEST = [['d.cop.s1', 'Why is attrition rising?'], ['d.cop.s2', 'Where is burnout risk highest?'], ['d.cop.s3', 'Forecast retention next quarter']];
 function CopilotBar({ askRef }) {
   const [val, setVal] = uState('');
@@ -266,6 +298,11 @@ function CopilotBar({ askRef }) {
 
   uEffect(() => { if (msgsRef.current) msgsRef.current.scrollTop = msgsRef.current.scrollHeight; }, [msgs, typing]);
 
+  /* ⚠️ send() — the Ask Stance webhook call. POST /api/ask -> server.js
+     proxies to MAKE_WEBHOOK_URL -> Airtable lookup -> Claude -> structured
+     JSON { summary, risk_level, recommendations, confidence_score }.
+     On non-2xx / network error / abort, falls back to window.HUMIND.answer()
+     so the user always sees a message instead of a silent failure. */
   async function send(q) {
     const text = (q || val).trim();
     if (!text) return;
@@ -526,14 +563,13 @@ function App() {
       {summary && <SummaryModal s={summary} onClose={() => setSummary(null)} />}
       {toast && <div className="toast"><span className="ti2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>{toast}</div>}
 
-      <TweaksPanel title="Stance">
-        <TweakSection label="Dashboard" />
-        <TweakRadio label="Density" value={t.density} options={['calm', 'cockpit']} onChange={(v) => setTweak('density', v)} />
-        <TweakSection label="Accent" />
-        <TweakColor label="AI accent" value={{ purple: '#7C3AED', sky: '#38BDF8', violet: '#A78BFA', emerald: '#2BD9A0' }[t.accent]}
-        options={['#7C3AED', '#38BDF8', '#A78BFA', '#2BD9A0']}
-        onChange={(hex) => setTweak('accent', { '#7C3AED': 'purple', '#38BDF8': 'sky', '#A78BFA': 'violet', '#2BD9A0': 'emerald' }[hex] || 'purple')} />
-      </TweaksPanel>
+      {/* Design tweaks (density/accent) dev panel — intentionally NOT rendered here.
+          It used to float bottom-right (z-index 9000) right above the Ask Stance bar,
+          visually similar (purple, circular) enough that real users clicked it
+          expecting Ask Stance to respond — nothing happened since it just toggles a
+          hidden dev panel. Density is already user-facing via the Calm/Cockpit
+          buttons in the topbar; re-enable <TweaksPanel> only behind a local/dev flag
+          if this is needed again, never unconditionally in production. */}
     </div>);
 
 }
