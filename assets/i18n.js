@@ -393,7 +393,7 @@
 
     /* ---- hero ---- */
     'hero.pill':  'Intelligence RH Executive',
-    'hero.h1':    '<span class="h1-white">Le Copilote IA</span><br><span class="h1-cyan">pour les Décisions</span><br><span class="h1-violet">RH Stratégiques.</span>',
+    'hero.h1':    'Le Copilote IA<br><span class="grad">pour les Décisions<br>RH Stratégiques.</span>',
     'hero.lead':  "Stance analyse chaque signal RH et fournit les prévisions dont votre direction a besoin pour agir. Pas un tableau de bord. Un moteur de décision.",
     'hero.cta1':  'Essayer la démo',
     'hero.cta2':  'Voir Stance en action',
