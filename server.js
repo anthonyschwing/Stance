@@ -120,6 +120,16 @@ function enrichIBM(rows) {
   });
 }
 
+function computeStabilityAggregates(raw) {
+  const total = raw.length;
+  const hasAttrition = raw.some(e => e.Attrition != null);
+  const attritionCount = hasAttrition ? raw.filter(e => e.Attrition === 'Yes').length : 0;
+  const attritionRate = hasAttrition ? Math.round((attritionCount / total) * 1000) / 10 : null;
+  const avgRisk = total ? Math.round(raw.reduce((s, e) => s + (e['Risk Score'] || 0), 0) / total) : 0;
+  const retentionRate = attritionRate != null ? Math.round((100 - attritionRate) * 10) / 10 : null;
+  return { total, attritionRate, avgRisk, retentionRate };
+}
+
 const PORT = process.env.PORT || 3000;
 
 const BASE_URL = 'https://api.airtable.com/v0';
@@ -176,18 +186,16 @@ async function airtableFetch(tableName, options = {}) {
 
 // ─── API routes ──────────────────────────────────────────────────────────────
 
-app.get('/api/employees', async (req, res) => {
-  // 1. Try Airtable (enriched data with AI fields already computed by Make)
+async function getEmployees() {
   if (API_KEY && BASE_ID) {
     try {
       const data = await airtableFetch(TABLE_EMPLOYEE, { maxRecords: 1500 });
-      if (data.length) return res.json(data);
+      if (data.length) return data;
     } catch (err) {
-      console.warn('[/api/employees] Airtable failed:', err.message);
+      console.warn('[getEmployees] Airtable failed:', err.message);
     }
   }
 
-  // 2. Fallback: IBM HR CSV in assets/ibm-hr.csv (raw IBM + computed fields)
   const csvPath = path.join(__dirname, 'assets', 'ibm-hr.csv');
   if (fs.existsSync(csvPath)) {
     try {
@@ -195,13 +203,19 @@ app.get('/api/employees', async (req, res) => {
       const rows = parseCSV(text);
       if (!rows.length) throw new Error('CSV empty');
       const enriched = enrichIBM(rows);
-      console.log(`[/api/employees] Serving IBM HR CSV — ${enriched.length} employees`);
-      return res.json(enriched);
+      console.log(`[getEmployees] Serving IBM HR CSV — ${enriched.length} employees`);
+      return enriched;
     } catch (csvErr) {
-      console.error('[/api/employees] CSV parse error:', csvErr.message);
+      console.error('[getEmployees] CSV parse error:', csvErr.message);
     }
   }
 
+  return [];
+}
+
+app.get('/api/employees', async (req, res) => {
+  const data = await getEmployees();
+  if (data.length) return res.json(data);
   res.status(503).json({
     error: 'No data source available. Configure Airtable in .env OR place ibm-hr.csv in assets/.'
   });
@@ -326,5 +340,7 @@ if (require.main === module) {
     }
   });
 }
+
+Object.assign(app, { getEmployees, computeStabilityAggregates });
 
 module.exports = app;
