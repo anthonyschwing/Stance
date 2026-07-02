@@ -207,6 +207,16 @@ function isValidCronAuth(authHeader, secret) {
   return !!secret && authHeader === `Bearer ${secret}`;
 }
 
+function mapStabilitySnapshots(records) {
+  return records.map(r => ({
+    date: r.Date,
+    total: r.Total,
+    attritionRate: r.AttritionRate,
+    retentionRate: r.RetentionRate,
+    avgRisk: r.AvgRisk
+  }));
+}
+
 // ─── API routes ──────────────────────────────────────────────────────────────
 
 async function getEmployees() {
@@ -298,6 +308,18 @@ app.get('/api/snapshot-stability', async (req, res) => {
   } catch (err) {
     console.error('[/api/snapshot-stability]', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/stability-history', async (req, res) => {
+  try {
+    const records = await airtableFetch(TABLE_STABILITY, {
+      sort: [{ field: 'Date', direction: 'asc' }]
+    });
+    res.json(mapStabilitySnapshots(records));
+  } catch (err) {
+    console.error('[/api/stability-history]', err.message);
+    res.json([]);
   }
 });
 
@@ -398,6 +420,6 @@ if (require.main === module) {
   });
 }
 
-Object.assign(app, { getEmployees, computeStabilityAggregates, isValidCronAuth });
+Object.assign(app, { getEmployees, computeStabilityAggregates, isValidCronAuth, mapStabilitySnapshots });
 
 module.exports = app;
