@@ -137,10 +137,12 @@ const API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = process.env.AIRTABLE_BASE_ID;
 const MAKE_WEBHOOK_URL     = process.env.MAKE_WEBHOOK_URL;
 const MAKE_CSV_WEBHOOK_URL = process.env.MAKE_CSV_WEBHOOK_URL;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 const TABLE_EMPLOYEE   = process.env.AIRTABLE_EMPLOYEE_TABLE   || 'Employee Analytics';
 const TABLE_DEPARTMENT = process.env.AIRTABLE_DEPARTMENT_TABLE || 'Department_rollups';
 const TABLE_EXECUTIVE  = process.env.AIRTABLE_EXECUTIVE_TABLE  || 'Executive_Summaries';
+const TABLE_STABILITY  = process.env.AIRTABLE_STABILITY_TABLE  || 'Workforce_Stability_Snapshots';
 
 // ─── Airtable helper ────────────────────────────────────────────────────────
 
@@ -182,6 +184,27 @@ async function airtableFetch(tableName, options = {}) {
   } while (offset && !options.maxRecords);
 
   return records.map(r => ({ id: r.id, ...r.fields }));
+}
+
+async function airtableWrite(method, tableName, fields, recordId) {
+  const url = `${BASE_URL}/${BASE_ID}/${encodeURIComponent(tableName)}${recordId ? '/' + recordId : ''}`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields })
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Airtable ${res.status}: ${body}`);
+  }
+  return res.json();
+}
+
+function isValidCronAuth(authHeader, secret) {
+  return !!secret && authHeader === `Bearer ${secret}`;
 }
 
 // ─── API routes ──────────────────────────────────────────────────────────────
@@ -240,6 +263,40 @@ app.get('/api/summary', async (req, res) => {
     res.json(data[0] || null);
   } catch (err) {
     console.error('[/api/summary]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/snapshot-stability', async (req, res) => {
+  if (!isValidCronAuth(req.headers['authorization'], CRON_SECRET)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (!API_KEY || !BASE_ID) {
+    return res.status(503).json({ error: 'Airtable not configured' });
+  }
+
+  try {
+    const raw = await getEmployees();
+    if (!raw.length) return res.status(503).json({ error: 'No employee data available' });
+
+    const { total, attritionRate, avgRisk, retentionRate } = computeStabilityAggregates(raw);
+    const today = new Date().toISOString().slice(0, 10);
+    const fields = { Date: today, Total: total, AttritionRate: attritionRate, RetentionRate: retentionRate, AvgRisk: avgRisk };
+
+    const existing = await airtableFetch(TABLE_STABILITY, {
+      filterByFormula: `{Date}='${today}'`,
+      maxRecords: 1
+    });
+
+    if (existing.length) {
+      await airtableWrite('PATCH', TABLE_STABILITY, fields, existing[0].id);
+    } else {
+      await airtableWrite('POST', TABLE_STABILITY, fields);
+    }
+
+    res.json({ ok: true, date: today, ...fields });
+  } catch (err) {
+    console.error('[/api/snapshot-stability]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -341,6 +398,6 @@ if (require.main === module) {
   });
 }
 
-Object.assign(app, { getEmployees, computeStabilityAggregates });
+Object.assign(app, { getEmployees, computeStabilityAggregates, isValidCronAuth });
 
 module.exports = app;
