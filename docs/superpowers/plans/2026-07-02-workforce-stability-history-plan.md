@@ -187,7 +187,7 @@ In `package.json`, update the `scripts` block to:
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --test test/"
+    "test": "node --test"
   },
 ```
 
