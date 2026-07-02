@@ -123,7 +123,7 @@ function StabilityChart() {
     rafRef.current = requestAnimationFrame(step);
     const guard = setTimeout(finish, dur + 160);
     return () => { cancelAnimationFrame(rafRef.current); clearTimeout(guard); };
-  }, [range]);
+  }, [range, isDemo]);
 
   const subText = T(meta.subKey, meta.subFb) + (isDemo ? ' · ' + T('bf.stabDemoBadge', 'Demo data') : '');
 
