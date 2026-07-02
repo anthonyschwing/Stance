@@ -52,6 +52,93 @@ function KPIInner({ label, value, unit, delta, deltaType = 'up', accent }) {
   );
 }
 
+/* DONNÉES DE DÉMONSTRATION — À CONNECTER À AIRTABLE
+   pour les vues 1A et 3A une fois l'historique
+   de données suffisant disponible */
+const STAB_RANGE_ORDER = ['3M', '6M', '1A', '3A'];
+const STAB_RANGE_META = {
+  '3M': {
+    subKey: 'bf.stabSub', subFb: 'Last 12 weeks',
+    axis: ['W1', 'W2', 'W4', 'W6', 'W8', 'W10', 'Now'],
+    values: [58, 62, 66, 68, 65, 70, 74, 72, 76, 78, 79, 81]
+  },
+  '6M': {
+    subKey: 'bf.stabSub.6m', subFb: 'Last 6 months',
+    axis: ['S1', 'S3', 'S5', 'S7', 'S9', 'S11', 'Now'],
+    values: [52, 55, 59, 57, 62, 65, 63, 68, 71, 70, 75, 79]
+  },
+  '1A': {
+    subKey: 'bf.stabSub.1a', subFb: 'Last 12 months',
+    axis: ['Jan', 'Mar', 'Mai', 'Jul', 'Sep', 'Nov', 'Now'],
+    values: [48, 52, 55, 53, 58, 61, 64, 67, 70, 73, 77, 81]
+  },
+  '3A': {
+    subKey: 'bf.stabSub.3a', subFb: 'Last 3 years',
+    axis: ['T1 24', 'T3 24', 'T1 25', 'T3 25', 'T1 26', 'Now'],
+    values: [40, 45, 49, 52, 56, 59, 62, 65, 69, 73, 77, 81]
+  }
+};
+
+function StabilityChart() {
+  const [range, setRange] = useB('3M');
+  const meta = STAB_RANGE_META[range];
+  const [dispValues, setDispValues] = useB(() => meta.values.slice());
+  const dispRef = React.useRef(meta.values.slice());
+  const rafRef = React.useRef(0);
+  const mounted = React.useRef(false);
+
+  useE(() => {
+    const to = STAB_RANGE_META[range].values;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!mounted.current) { mounted.current = true; dispRef.current = to.slice(); setDispValues(to.slice()); return; }
+    if (reduce) { dispRef.current = to.slice(); setDispValues(to.slice()); return; }
+    const from = dispRef.current.slice();
+    const dur = 400;
+    const t0 = performance.now ? performance.now() : Date.now();
+    const ease = t => 1 - Math.pow(1 - t, 3); // ease-out
+    cancelAnimationFrame(rafRef.current);
+    const finish = () => { dispRef.current = to.slice(); setDispValues(to.slice()); };
+    const step = (now) => {
+      const p = Math.min(1, ((now || Date.now()) - t0) / dur);
+      const e = ease(p);
+      const cur = to.map((v, i) => from[i] + (v - from[i]) * e);
+      dispRef.current = cur; setDispValues(cur);
+      if (p < 1) rafRef.current = requestAnimationFrame(step);
+      else finish();
+    };
+    rafRef.current = requestAnimationFrame(step);
+    const guard = setTimeout(finish, dur + 160);
+    return () => { cancelAnimationFrame(rafRef.current); clearTimeout(guard); };
+  }, [range]);
+
+  return (
+    <BentoCard
+      className="bc-primary" glass beam
+      sub={T(meta.subKey, meta.subFb)}
+      title={T('bf.stabTitle', 'Workforce Stability is Improving')}
+      right={
+        <div className="time-filter-group">
+          {STAB_RANGE_ORDER.map(r => (
+            <button
+              key={r}
+              className={'time-filter' + (range === r ? ' active' : '')}
+              onClick={() => setRange(r)}>
+              {r}
+            </button>
+          ))}
+        </div>
+      }>
+      <AreaChart
+        values={dispValues}
+        h={160} color="var(--green)" fillId="bfStab" min={35} max={90} />
+      <div className="axis-x">
+        {meta.axis.map((a, i) => <span key={i}>{a}</span>)}
+      </div>
+      <BriefAIRead>{T('bf.stab.note', 'AI Insight: Removing the top 3 exit drivers is modeled to sustain this improving trend into Q2.')}</BriefAIRead>
+    </BentoCard>
+  );
+}
+
 function EmployeeSpotlight({ onNav }) {
   const e = H.employees[0];
   const loc = H.locEmp(e);
@@ -141,24 +228,7 @@ function OverviewView({ openInsight, openSummary, onNav }) {
         </BentoCard>
 
         {/* Attrition Risk / Workforce Stability trend — primary focal card */}
-        <BentoCard
-          className="bc-primary" glass beam
-          sub={T('bf.stabSub', 'Last 12 weeks')}
-          title={T('bf.stabTitle', 'Workforce Stability is Improving')}
-          right={
-            <div className="seg">
-              <button className="on">12W</button>
-              <button>24W</button>
-            </div>
-          }>
-          <AreaChart
-            values={[58, 62, 66, 68, 65, 70, 74, 72, 76, 78, 79, 81]}
-            h={160} color="var(--cyan)" fillId="bfStab" min={50} max={90} />
-          <div className="axis-x">
-            <span>W1</span><span>W2</span><span>W4</span><span>W6</span><span>W8</span><span>W10</span><span>Now</span>
-          </div>
-          <BriefAIRead>{T('bf.stab.note', 'AI Insight: Removing the top 3 exit drivers is modeled to sustain this improving trend into Q2.')}</BriefAIRead>
-        </BentoCard>
+        <StabilityChart />
 
         {/* Needs Attention — critical signals */}
         <BentoCard

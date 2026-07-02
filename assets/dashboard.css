@@ -276,6 +276,18 @@
 }
 .seg button.on { background: var(--surface-3); color: var(--text-1); }
 
+/* ---- Time-range filter pills (Workforce stability chart) ---- */
+.time-filter-group { display: flex; gap: 6px; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+.time-filter-group::-webkit-scrollbar { display: none; }
+.time-filter {
+  padding: 6px 14px; border-radius: 8px; background: transparent;
+  border: 1px solid var(--line); color: var(--text-3);
+  font-family: var(--f-mono); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .15s ease; white-space: nowrap; flex-shrink: 0;
+}
+.time-filter:hover { color: var(--text-1); border-color: var(--line-2, var(--line)); }
+.time-filter.active { background: rgba(124,58,237,.15); border-color: var(--cyan); color: var(--text-1); }
+
 /* ---- Bar list ---- */
 .barrow { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 10px; padding: 5px 0; }
 .bl { font-size: 12px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
