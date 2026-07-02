@@ -325,6 +325,7 @@
     'bf.stabSub.3a':        '3 dernières années',
     'bf.stabTitle':         'La stabilité de la Workforce s\'améliore',
     'bf.stab.note':         "IA Insight : Supprimer les 3 principaux facteurs d'attrition est modélisé pour maintenir la tendance améliorée au T2.",
+    'bf.stabDemoBadge':     'Données de démo',
     'bf.retSub':            'Prévision · 12 mois',
     'bf.retTitle':          'Projection de rétention',
     'bf.retLabel':          'Rétention',

@@ -52,10 +52,11 @@ function KPIInner({ label, value, unit, delta, deltaType = 'up', accent }) {
   );
 }
 
-/* DONNÉES DE DÉMONSTRATION — À CONNECTER À AIRTABLE
-   pour les vues 1A et 3A une fois l'historique
-   de données suffisant disponible */
+/* DONNÉES DE DÉMONSTRATION — utilisées tant que l'historique réel
+   (window.HUMIND._stabilityHistory, alimenté par dashboard-stability-history.js)
+   ne couvre pas encore toute la durée du range sélectionné. */
 const STAB_RANGE_ORDER = ['3M', '6M', '1A', '3A'];
+const STAB_RANGE_DAYS = { '3M': 90, '6M': 180, '1A': 365, '3A': 1095 };
 const STAB_RANGE_META = {
   '3M': {
     subKey: 'bf.stabSub', subFb: 'Last 12 weeks',
@@ -79,16 +80,29 @@ const STAB_RANGE_META = {
   }
 };
 
+function stabilityDataFor(range) {
+  const demo = STAB_RANGE_META[range];
+  const history = (window.HUMIND && window.HUMIND._stabilityHistory) || [];
+  const realValues = window.StanceStability.bucketStability(history, STAB_RANGE_DAYS[range]);
+  if (!realValues) {
+    return { values: demo.values, axis: demo.axis, isDemo: true };
+  }
+  return { values: realValues, axis: window.StanceStability.bucketAxisLabels(STAB_RANGE_DAYS[range]), isDemo: false };
+}
+
 function StabilityChart() {
   const [range, setRange] = useB('3M');
   const meta = STAB_RANGE_META[range];
-  const [dispValues, setDispValues] = useB(() => meta.values.slice());
-  const dispRef = React.useRef(meta.values.slice());
+  const initial = stabilityDataFor(range);
+  const [dispValues, setDispValues] = useB(() => initial.values.slice());
+  const dispRef = React.useRef(initial.values.slice());
   const rafRef = React.useRef(0);
   const mounted = React.useRef(false);
 
+  const { values: toValues, axis, isDemo } = stabilityDataFor(range);
+
   useE(() => {
-    const to = STAB_RANGE_META[range].values;
+    const to = toValues;
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!mounted.current) { mounted.current = true; dispRef.current = to.slice(); setDispValues(to.slice()); return; }
     if (reduce) { dispRef.current = to.slice(); setDispValues(to.slice()); return; }
@@ -111,10 +125,12 @@ function StabilityChart() {
     return () => { cancelAnimationFrame(rafRef.current); clearTimeout(guard); };
   }, [range]);
 
+  const subText = T(meta.subKey, meta.subFb) + (isDemo ? ' · ' + T('bf.stabDemoBadge', 'Demo data') : '');
+
   return (
     <BentoCard
       className="bc-primary" glass beam
-      sub={T(meta.subKey, meta.subFb)}
+      sub={subText}
       title={T('bf.stabTitle', 'Workforce Stability is Improving')}
       right={
         <div className="time-filter-group">
@@ -132,7 +148,7 @@ function StabilityChart() {
         values={dispValues}
         h={160} color="var(--green)" fillId="bfStab" min={35} max={90} />
       <div className="axis-x">
-        {meta.axis.map((a, i) => <span key={i}>{a}</span>)}
+        {axis.map((a, i) => <span key={i}>{a}</span>)}
       </div>
       <BriefAIRead>{T('bf.stab.note', 'AI Insight: Removing the top 3 exit drivers is modeled to sustain this improving trend into Q2.')}</BriefAIRead>
     </BentoCard>
