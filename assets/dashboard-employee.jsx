@@ -50,8 +50,8 @@ function PlayerCard({ e }) {
       <div className="pc-name">{e.name}</div>
       <div className="pc-role">{e.role}</div>
       <div className="pc-meta">
-        <div><span>{T('emp.dept', 'Dept')}</span><b>{e.dept}</b></div>
-        <div><span>{T('emp.base', 'Base')}</span><b>{e.region}</b></div>
+        <div><span>{T('emp.dept', 'Dept')}</span><b title={e.dept}>{e.dept}</b></div>
+        <div><span>{T('emp.base', 'Base')}</span><b title={e.region}>{e.region}</b></div>
         <div><span>{T('emp.tenure', 'Tenure')}</span><b>{e.tenure}</b></div>
         <div><span>{T('emp.profile', 'Profile')}</span><b>{overall}/100</b></div>
       </div>

@@ -460,10 +460,10 @@
   pointer-events: none;
 }
 .player-card > * { position: relative; }
-.player-card.pc-crit { border-color: rgba(255,122,138,.38); }
-.player-card.pc-high { border-color: rgba(246,196,90,.38); }
-.player-card.pc-mod  { border-color: rgba(167,139,250,.4); }
-.player-card.pc-low  { border-color: rgba(63,217,166,.38); }
+.player-card.pc-crit { border: 1px solid rgba(248,113,113,.4); box-shadow: 0 0 0 1px rgba(248,113,113,.15), 0 20px 48px -24px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.07); }
+.player-card.pc-high { border: 1px solid rgba(246,196,90,.4); box-shadow: 0 0 0 1px rgba(246,196,90,.15), 0 20px 48px -24px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.07); }
+.player-card.pc-mod  { border: 1px solid rgba(167,139,250,.4); box-shadow: 0 0 0 1px rgba(167,139,250,.15), 0 20px 48px -24px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.07); }
+.player-card.pc-low  { border: 1px solid rgba(63,217,166,.4); box-shadow: 0 0 0 1px rgba(63,217,166,.15), 0 20px 48px -24px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.07); }
 .pc-top { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; }
 .pc-ovr { text-align: left; }
 .pc-ovr b { font-family: var(--f-display); font-size: 54px; font-weight: 800; line-height: 1; letter-spacing: -.04em; }
@@ -486,9 +486,9 @@
 .pc-name { font-family: var(--f-display); font-size: 17px; font-weight: 700; text-align: center; letter-spacing: -.01em; }
 .pc-role { font-family: var(--f-mono); font-size: 10.5px; color: var(--text-4); text-align: center; margin-top: 2px; }
 .pc-meta { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 10px; }
-.pc-meta div { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 8px; padding: 7px 9px; }
+.pc-meta div { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 8px; padding: 7px 9px; min-width: 0; }
 .pc-meta span { font-family: var(--f-mono); font-size: 9px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-4); display: block; margin-bottom: 2px; }
-.pc-meta b { font-size: 11.5px; font-weight: 650; display: block; line-height: 1.35; word-break: break-word; }
+.pc-meta b { font-size: 11.5px; font-weight: 650; display: block; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; }
 
 /* ---- Radar layout ---- */
 .radar-panel .panel-h { margin-bottom: 10px; }
@@ -770,6 +770,16 @@
 @media (max-width: 1200px) {
   .emp-main-grid { grid-template-columns: 1fr; }
   .emp-vitals { grid-template-columns: repeat(2,1fr); }
+  /* identity panel now spans full width — use the extra room to cut the
+     vitals block from 3 rows to 2, so the radar panel below isn't pushed
+     so far past the fold */
+  .emp-vitals-2col { grid-template-columns: repeat(3,1fr) !important; }
+  .emp-id-row { grid-template-columns: 260px 1fr; }
+  /* trim the player card's own height too — it's the real driver pushing
+     the radar panel below the fold at this width, not the vitals grid */
+  .player-card { padding: 16px 18px 18px; }
+  .pc-portrait { width: 64px; height: 64px; margin: 6px 0 6px; font-size: 22px; border-radius: 16px; }
+  .pc-ovr b { font-size: 38px; }
   .radar-layout { grid-template-columns: 1fr; gap: 24px; }
   .radar-stage { justify-content: center; }
   .factor-grid { grid-template-columns: repeat(2,1fr); }
