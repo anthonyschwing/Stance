@@ -100,6 +100,24 @@
   </div>
 </aside>
 
+<!-- demo entry-point choice: sample IBM HR dataset vs. own CSV -->
+<div class="demo-scrim" id="demoScrim" hidden></div>
+<div class="demo-modal" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle" aria-hidden="true" hidden>
+  <button type="button" class="demo-modal-close" id="demoModalClose" aria-label="Close">✕</button>
+  <h3 id="demoModalTitle" data-i18n="demo.title">See Stance in action</h3>
+  <p class="demo-modal-sub" data-i18n="demo.sub">No sign-in required — pick how you'd like to explore.</p>
+  <div class="demo-choice">
+    <button type="button" class="btn btn-primary btn-lg demo-choice-btn" id="demoOptionIbm">
+      <span data-i18n="demo.optA.title">See Stance with the IBM HR dataset</span>
+      <span class="btn-sub" data-i18n="demo.optA.sub">The dataset that powers Stance — instant results, no data required</span>
+    </button>
+    <button type="button" class="btn btn-ghost btn-lg demo-choice-btn" id="demoOptionCsv">
+      <span data-i18n="demo.optB.title">Import my own CSV file</span>
+      <span class="btn-sub" data-i18n="demo.optB.sub">HR format, automatic mapping</span>
+    </button>
+  </div>
+</div>
+
 <main id="top">
 
 <!-- ============================= HERO ============================= -->
@@ -114,7 +132,7 @@
 <span class="grad">Strategic HR Decisions.</span></h1>
         <p class="lead reveal d2" data-i18n="hero.lead">Stance reads every workforce signal and returns the forecasts your leadership needs to act. Not a dashboard. A decision engine.</p>
         <div class="hero-cta reveal d3">
-          <a class="btn btn-primary btn-lg" href="/sign-in" data-i18n="hero.cta1">Try the demo</a>
+          <a class="btn btn-primary btn-lg" href="/dashboard" id="tryDemoBtn" data-i18n="hero.cta1">Try the demo</a>
           <a class="hero-textlink" href="/dashboard" data-i18n="hero.cta2">See Stance in Action</a>
         </div>
       </div>
@@ -425,6 +443,40 @@
   document.addEventListener('keydown',function(e){if(e.key==='Escape')open(false);});
   // close if resized back to desktop
   window.addEventListener('resize',function(){if(window.innerWidth>767)open(false);});
+})();
+</script>
+<script>
+/* "Try the demo" — quick choice: sample IBM HR dataset vs. own CSV. No login required. */
+(function(){
+  var tryBtn=document.getElementById('tryDemoBtn'),
+      scrim=document.getElementById('demoScrim'),
+      modal=document.getElementById('demoModal'),
+      close=document.getElementById('demoModalClose'),
+      optIbm=document.getElementById('demoOptionIbm'),
+      optCsv=document.getElementById('demoOptionCsv');
+  if(!tryBtn||!modal) return;
+  function open(o){
+    modal.classList.toggle('on',o);
+    scrim.classList.toggle('on',o);
+    modal.setAttribute('aria-hidden',o?'false':'true');
+    if(o){scrim.hidden=false;modal.hidden=false;}
+    else{setTimeout(function(){scrim.hidden=true;modal.hidden=true;},220);}
+    document.documentElement.style.overflow=o?'hidden':'';
+  }
+  tryBtn.addEventListener('click',function(e){e.preventDefault();open(true);});
+  close.addEventListener('click',function(){open(false);});
+  scrim.addEventListener('click',function(){open(false);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('on'))open(false);});
+
+  window.loadIBMDataset=function(){
+    try{sessionStorage.setItem('stance-demo-source','ibm');}catch(_){}
+    window.location.href='/dashboard?src=ibm';
+  };
+  window.openImportModal=function(){
+    window.location.href='/dashboard?upload=1';
+  };
+  optIbm.addEventListener('click',window.loadIBMDataset);
+  optCsv.addEventListener('click',window.openImportModal);
 })();
 </script>
 <script>

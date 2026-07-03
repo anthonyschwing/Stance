@@ -513,10 +513,23 @@ function App() {
     return hash && TITLES[hash] ? hash : 'overview';
   });
   const [selectedEmpId, setSelectedEmpId] = uState(null);
-  const [upload, setUpload] = uState(false);
+  const [upload, setUpload] = uState(() => new URLSearchParams(window.location.search).get('upload') === '1');
   const [summary, setSummary] = uState(null);
   const [toast, setToast] = uState(null);
   const [sideOpen, setSideOpen] = uState(false);
+  const [demoSrc, setDemoSrc] = uState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('src') === 'ibm') { try { sessionStorage.setItem('stance-demo-source', 'ibm'); } catch (_) {} return true; }
+    try { return sessionStorage.getItem('stance-demo-source') === 'ibm'; } catch (_) { return false; }
+  });
+  uEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('upload') || params.has('src')) {
+      params.delete('upload'); params.delete('src');
+      const qs = params.toString();
+      window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+    }
+  }, []);
   const copilotAsk = uRef(null);
   const [, setLang] = uState(0);
   uEffect(() => {
@@ -583,6 +596,12 @@ function App() {
       {sideOpen && <button className="side-scrim" aria-label="Close menu" onClick={() => setSideOpen(false)}></button>}
 
       <div className="main">
+        {demoSrc &&
+        <div className="demo-banner">
+          {T('demo.banner', 'IBM HR Analytics sample dataset')}
+          {' · '}
+          <a href="#" onClick={(e) => { e.preventDefault(); setUpload(true); }}>{T('demo.banner.cta', 'Import my own data instead')}</a>
+        </div>}
         <header className="topbar">
           <button className="modal-x" style={{ display: 'none' }} id="burger" onClick={() => setSideOpen((o) => !o)}>☰</button>
           <div>
@@ -606,7 +625,7 @@ function App() {
 
       <CopilotBar askRef={copilotAsk} />
 
-      {upload && <UploadModal onClose={() => setUpload(false)} onDone={() => {setUpload(false);showToast(T('d.up.toast', 'Analysis complete · 7 new signals detected'));setView('overview');}} />}
+      {upload && <UploadModal onClose={() => setUpload(false)} onDone={() => {setUpload(false);setDemoSrc(false);try{sessionStorage.removeItem('stance-demo-source');}catch(_){}showToast(T('d.up.toast', 'Analysis complete · 7 new signals detected'));setView('overview');}} />}
       {summary && <SummaryModal s={summary} onClose={() => setSummary(null)} />}
       {toast && <div className="toast"><span className="ti2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>{toast}</div>}
 

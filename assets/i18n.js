@@ -407,6 +407,16 @@
     'hero.cta1':  'Essayer la démo',
     'hero.cta2':  'Voir Stance en action',
 
+    /* ---- demo entry-point choice modal ---- */
+    'demo.title':      'Voir Stance en action',
+    'demo.sub':         'Aucune connexion requise — choisissez comment explorer le produit.',
+    'demo.optA.title': 'Voir Stance avec le jeu de données IBM HR',
+    'demo.optA.sub':   "Le dataset qui alimente Stance — résultat immédiat, aucune donnée à fournir",
+    'demo.optB.title': 'Importer mon propre fichier CSV',
+    'demo.optB.sub':   'Format RH, mapping automatique',
+    'demo.banner':     "Données du jeu IBM HR Analytics",
+    'demo.banner.cta': 'Importer mes propres données à la place',
+
     /* ---- stage (dashboard preview) ---- */
     'stage.health':       'Score de Santé de la Workforce',
     'stage.healthy':      'Sain',

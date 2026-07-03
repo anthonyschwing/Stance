@@ -245,6 +245,34 @@ a{color:inherit;text-decoration:none}
 .np-lang-lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-4)}
 .np-foot .btn{width:100%;justify-content:center}
 
+/* ---- Demo entry-point choice (landing "Try the demo") ---- */
+.demo-scrim{position:fixed;inset:0;background:rgba(6,9,16,.65);backdrop-filter:blur(3px);
+  opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s;z-index:190}
+.demo-scrim.on{opacity:1;visibility:visible}
+.demo-modal{position:fixed;top:50%;left:50%;z-index:200;width:min(460px,92vw);
+  background:linear-gradient(180deg,rgba(17,24,39,.98),rgba(11,15,25,.99));
+  border:1px solid var(--line-2);border-radius:var(--r-lg,20px);
+  backdrop-filter:blur(16px) saturate(140%);box-shadow:0 24px 70px rgba(0,0,0,.5);
+  padding:28px 26px 26px;text-align:center;
+  opacity:0;visibility:hidden;transform:translate(-50%,-46%);
+  transition:opacity .22s,visibility .22s,transform .22s cubic-bezier(.2,.7,.3,1)}
+.demo-modal.on{opacity:1;visibility:visible;transform:translate(-50%,-50%)}
+.demo-modal h3{font-family:var(--f-display);font-size:20px;font-weight:700;margin:0 0 8px}
+.demo-modal-sub{font-size:14px;color:var(--text-2);margin:0 0 22px}
+.demo-modal-close{position:absolute;top:14px;right:14px;width:34px;height:34px;
+  border:0;border-radius:10px;background:var(--surface-2);color:var(--text-2);
+  font-size:14px;cursor:pointer;transition:background .18s,color .18s}
+.demo-modal-close:hover{background:var(--surface-3);color:var(--text)}
+.demo-choice{display:flex;flex-direction:column;gap:12px}
+.demo-choice-btn{flex-direction:column;gap:3px;width:100%;padding:16px 20px;white-space:normal;line-height:1.3}
+.demo-choice-btn .btn-sub{display:block;font-size:12.5px;font-weight:500;opacity:.82}
+.demo-choice-btn.btn-primary .btn-sub{color:rgba(255,255,255,.85)}
+.demo-choice-btn.btn-ghost .btn-sub{color:var(--text-3)}
+@media(prefers-reduced-motion:reduce){
+  .demo-scrim,.demo-modal{transition:none}
+  .demo-modal{transform:translate(-50%,-50%)}
+}
+
 /* ----------------------------- HERO ------------------------------------ */
 .hero{padding-top:140px;padding-bottom:40px;position:relative}
 .hero-grid{display:grid;gap:48px}

@@ -64,6 +64,18 @@
 /* ---- Main column ---- */
 .main { display: flex; flex-direction: column; min-width: 0; }
 
+/* ---- Demo dataset context banner (shown when dashboard loaded via IBM HR sample) ---- */
+.demo-banner {
+  background: rgba(124,58,237,0.08);
+  border-bottom: 1px solid rgba(124,58,237,0.15);
+  padding: 10px 24px;
+  font-size: 13px;
+  color: #A78BFA;
+  text-align: center;
+}
+.demo-banner a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.demo-banner a:hover { color: var(--text-1); }
+
 /* ---- Topbar ---- */
 .topbar {
   position: sticky; top: 0; z-index: 100;
