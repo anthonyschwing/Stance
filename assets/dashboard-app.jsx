@@ -101,85 +101,26 @@ function ThemeToggle() {
   );
 }
 
-/* ---------------- Upload modal ---------------- */
-const UPLOAD_STEPS = [['d.up.s0', 'Parsing 12,480 rows'], ['d.up.s1', 'Mapping fields & cleaning'], ['d.up.s2', 'Clustering cohorts'], ['d.up.s3', 'Scoring attrition risk'], ['d.up.s4', 'Generating insights']];
-function UploadModal({ onClose, onDone }) {
-  const [phase, setPhase] = uState('drop');
-  const [step, setStep] = uState(-1);
-  const [drag, setDrag] = uState(false);
-  const fileRef = uRef(null);
-
-  async function start(file) {
-    setPhase('run'); setStep(0);
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ csv_data: e.target.result, filename: file.name })
-          });
-        } catch (_) {}
-      };
-      reader.readAsText(file);
-    }
-  }
-
-  uEffect(() => {
-    if (phase !== 'run') return;
-    if (step >= UPLOAD_STEPS.length) {setPhase('done');setTimeout(onDone, 700);return;}
-    const t = setTimeout(() => setStep((s) => s + 1), 720);
-    return () => clearTimeout(t);
-  }, [phase, step]);
-
-  const pct = phase === 'done' ? 100 : Math.max(0, Math.round(step / UPLOAD_STEPS.length * 100));
+/* ---------------- Import gate ---------------- */
+/* Single entry point: Stance only knows how to interpret the IBM HR
+   Analytics dataset today, so the gate offers exactly one action instead
+   of implying arbitrary-file import is supported. */
+function ImportGate({ onLoad }) {
   return (
-    <div className="scrim" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-top">
-          <h3>{phase === 'done' ? window.T('d.up.done', 'Analysis complete') : window.T('d.up.title', 'Import workforce data')}</h3>
-          <button className="modal-x" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          {phase === 'drop' &&
-          <>
-              <input ref={fileRef} type="file" accept=".csv" style={{display:'none'}}
-                onChange={(e) => { const f = e.target.files[0]; if (f) start(f); }} />
-              <div className={'drop' + (drag ? ' drag' : '')} onClick={() => fileRef.current && fileRef.current.click()}
-            onDragOver={(e) => {e.preventDefault();setDrag(true);}}
-            onDragLeave={() => setDrag(false)}
-            onDrop={(e) => {e.preventDefault();setDrag(false);const f=e.dataTransfer.files[0];if(f)start(f);}}>
-                <div className="di"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg></div>
-                <h4>{window.T('d.up.drop', 'Drop your HR CSV here')}</h4>
-                <p>{window.T('d.up.browse', 'or click to browse — Stance maps & analyzes automatically')}</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span className="chip">employees.csv</span><span className="chip">Workday export</span><span className="chip">BambooHR</span><span className="chip">SAP SuccessFactors</span>
-              </div>
-            </>
-          }
-          {phase !== 'drop' &&
-          <>
-              <div className="prog"><i style={{ width: pct + '%' }}></i></div>
-              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-3)', textAlign: 'right', marginBottom: 8 }}>{pct}%</div>
-              <div className="steps-run">
-                {UPLOAD_STEPS.map((s, i) => {
-                const state = phase === 'done' || i < step ? 'done' : i === step ? 'active' : '';
-                return (
-                  <div className={'srow ' + state} key={i}>
-                      <span className="si">{state === 'done' ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg> : state === 'active' ? <span className="spin"></span> : ''}</span>
-                      {window.T(s[0], s[1])}
-                    </div>);
-
-              })}
-              </div>
-            </>
-          }
+    <div className="gate-screen">
+      <div className="import-gate">
+        <h2>{window.T('gate.title', 'Load the dataset')}</h2>
+        <p>{window.T('gate.desc', "This Stance demo analyzes the IBM HR Analytics Employee Attrition dataset — the standard reference in HR research, used to illustrate the analysis engine's capabilities.")}</p>
+        <button className="btn btn-primary btn-lg gate-cta" onClick={onLoad}>
+          {window.T('gate.cta', 'Load the IBM HR dataset')}
+          <span className="btn-sub">{window.T('gate.cta.sub', '1,470 employees · results in 3 seconds')}</span>
+        </button>
+        <div className="future-feature">
+          <span className="badge">{window.T('gate.future.badge', 'Coming soon')}</span>
+          {window.T('gate.future.text', 'Import your own HR data (Workday, BambooHR, SAP SuccessFactors, custom CSV)')}
         </div>
       </div>
     </div>);
-
 }
 
 /* ---------------- Summary modal ---------------- */
@@ -513,23 +454,16 @@ function App() {
     return hash && TITLES[hash] ? hash : 'overview';
   });
   const [selectedEmpId, setSelectedEmpId] = uState(null);
-  const [upload, setUpload] = uState(() => new URLSearchParams(window.location.search).get('upload') === '1');
   const [summary, setSummary] = uState(null);
   const [toast, setToast] = uState(null);
   const [sideOpen, setSideOpen] = uState(false);
-  const [demoSrc, setDemoSrc] = uState(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('src') === 'ibm') { try { sessionStorage.setItem('stance-demo-source', 'ibm'); } catch (_) {} return true; }
-    try { return sessionStorage.getItem('stance-demo-source') === 'ibm'; } catch (_) { return false; }
+  const [dataLoaded, setDataLoaded] = uState(() => {
+    try { return sessionStorage.getItem('dataLoaded') === 'true'; } catch (_) { return false; }
   });
-  uEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('upload') || params.has('src')) {
-      params.delete('upload'); params.delete('src');
-      const qs = params.toString();
-      window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
-    }
-  }, []);
+  function loadIBMDataset() {
+    try { sessionStorage.setItem('dataLoaded', 'true'); } catch (_) {}
+    setDataLoaded(true);
+  }
   const copilotAsk = uRef(null);
   const [, setLang] = uState(0);
   uEffect(() => {
@@ -554,6 +488,8 @@ function App() {
     const q = T('d.cop.insightQ', 'Tell me more about') + ': ' + it.title;
     if (copilotAsk.current) copilotAsk.current(q);
   }
+
+  if (!dataLoaded) return <ImportGate onLoad={loadIBMDataset} />;
 
   const views = {
     overview: <OverviewView openInsight={openInsight} openSummary={setSummary} onNav={setView} />,
@@ -596,12 +532,7 @@ function App() {
       {sideOpen && <button className="side-scrim" aria-label="Close menu" onClick={() => setSideOpen(false)}></button>}
 
       <div className="main">
-        {demoSrc &&
-        <div className="demo-banner">
-          {T('demo.banner', 'IBM HR Analytics sample dataset')}
-          {' · '}
-          <a href="#" onClick={(e) => { e.preventDefault(); setUpload(true); }}>{T('demo.banner.cta', 'Import my own data instead')}</a>
-        </div>}
+        <div className="demo-banner">{T('demo.banner', 'Demo based on the IBM HR Analytics dataset (1,470 employees)')}</div>
         <header className="topbar">
           <button className="modal-x" style={{ display: 'none' }} id="burger" onClick={() => setSideOpen((o) => !o)}>☰</button>
           <div>
@@ -615,9 +546,6 @@ function App() {
             <button className={t.density === 'calm' ? 'on' : ''} onClick={() => setTweak('density', 'calm')}>{T('d.density.calm', 'Calm')}</button>
             <button className={t.density === 'cockpit' ? 'on' : ''} onClick={() => setTweak('density', 'cockpit')}>{T('d.density.cockpit', 'Cockpit')}</button>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={() => setUpload(true)}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4M8 8l4-4 4 4" /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>{T('d.upload', 'Upload CSV')}
-          </button>
         </header>
 
         <div className="content">{views[view]}</div>
@@ -625,7 +553,6 @@ function App() {
 
       <CopilotBar askRef={copilotAsk} />
 
-      {upload && <UploadModal onClose={() => setUpload(false)} onDone={() => {setUpload(false);setDemoSrc(false);try{sessionStorage.removeItem('stance-demo-source');}catch(_){}showToast(T('d.up.toast', 'Analysis complete · 7 new signals detected'));setView('overview');}} />}
       {summary && <SummaryModal s={summary} onClose={() => setSummary(null)} />}
       {toast && <div className="toast"><span className="ti2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>{toast}</div>}
 

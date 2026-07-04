@@ -269,13 +269,6 @@
     'rep.intro':     "Synthèses exécutives prêtes pour le conseil, générées depuis vos données RH en temps réel. Chaque chiffre est explicable et sourcé.",
     'rep.generate':  'Générer une synthèse',
 
-    /* Upload steps */
-    'd.up.s0': 'Analyse de 12 480 lignes',
-    'd.up.s1': 'Mapping des champs et nettoyage',
-    'd.up.s2': 'Clustering des cohortes',
-    'd.up.s3': "Score de risque d'attrition",
-    'd.up.s4': 'Génération des insights',
-
     /* Employee back button */
     'emp.back': 'Retour au tableau de bord',
 
@@ -283,16 +276,10 @@
     'd.live':               'En direct',
     'd.synced':             'Synchronisé il y a 2 min',
     'd.search':             'Rechercher personnes, équipes, signaux…',
-    'd.upload':             'Importer CSV',
     'd.density.calm':       'Calm',
     'd.density.cockpit':    'Cockpit',
     'd.userrole':           'Directrice des Ressources Humaines',
     'd.fab':                'Demander à Stance',
-    'd.up.title':           'Importer des données RH',
-    'd.up.done':            'Analyse terminée',
-    'd.up.toast':           'Analyse terminée · 7 nouveaux signaux détectés',
-    'd.up.drop':            'Déposez votre CSV RH ici',
-    'd.up.browse':          'ou cliquez pour parcourir — Stance mappe et analyse automatiquement',
     'd.cop.greeting':       "Bonjour — je suis votre Copilote Stance. Posez-moi n'importe quelle question sur vos données RH.",
     'd.cop.sub':            '12 480 dossiers employés lus',
     'd.cop.ph':             "Demandez sur l'attrition, l'engagement, la rétention…",
@@ -407,15 +394,16 @@
     'hero.cta1':  'Essayer la démo',
     'hero.cta2':  'Voir Stance en action',
 
-    /* ---- demo entry-point choice modal ---- */
-    'demo.title':      'Voir Stance en action',
-    'demo.sub':         'Aucune connexion requise — choisissez comment explorer le produit.',
-    'demo.optA.title': 'Voir Stance avec le jeu de données IBM HR',
-    'demo.optA.sub':   "Le dataset qui alimente Stance — résultat immédiat, aucune donnée à fournir",
-    'demo.optB.title': 'Importer mon propre fichier CSV',
-    'demo.optB.sub':   'Format RH, mapping automatique',
-    'demo.banner':     "Données du jeu IBM HR Analytics",
-    'demo.banner.cta': 'Importer mes propres données à la place',
+    /* ---- import gate (single entry point) ---- */
+    'gate.title':          'Charger le jeu de données',
+    'gate.desc':           "Cette démo de Stance analyse le dataset IBM HR Analytics Employee Attrition — la référence standard en recherche RH, utilisée pour illustrer les capacités du moteur d'analyse.",
+    'gate.cta':            'Charger le jeu de données IBM HR',
+    'gate.cta.sub':        '1 470 employés · résultat en 3 secondes',
+    'gate.future.badge':   'Bientôt disponible',
+    'gate.future.text':    'Import de vos propres données RH (Workday, BambooHR, SAP SuccessFactors, CSV personnalisé)',
+
+    /* ---- dashboard context banner ---- */
+    'demo.banner':     "Démo basée sur le dataset IBM HR Analytics (1 470 employés)",
 
     /* ---- stage (dashboard preview) ---- */
     'stage.health':       'Score de Santé de la Workforce',
