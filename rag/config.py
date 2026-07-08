@@ -25,7 +25,7 @@ AIRTABLE_TABLES = {
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 
-CHROMA_PERSIST_DIR = str(ROOT_DIR / "rag" / "chroma_db")
+CHROMA_PERSIST_DIR = os.environ.get("RAG_CHROMA_DIR", str(ROOT_DIR / "rag" / "chroma_db"))
 CHROMA_COLLECTION = os.environ.get("RAG_CHROMA_COLLECTION", "stance_hr_data")
 
 CHUNK_MAX_CHARS = int(os.environ.get("RAG_CHUNK_MAX_CHARS", "1000"))

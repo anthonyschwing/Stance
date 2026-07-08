@@ -135,8 +135,10 @@ const PORT = process.env.PORT || 3000;
 const BASE_URL = 'https://api.airtable.com/v0';
 const API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = process.env.AIRTABLE_BASE_ID;
-const MAKE_WEBHOOK_URL     = process.env.MAKE_WEBHOOK_URL;
 const MAKE_CSV_WEBHOOK_URL = process.env.MAKE_CSV_WEBHOOK_URL;
+// Internal-only override for local testing (e.g. `vercel dev`); in production
+// this resolves to the same deployment's own /api/rag-ask (Python function).
+const RAG_API_URL = process.env.RAG_API_URL;
 const CRON_SECRET = process.env.CRON_SECRET;
 
 const TABLE_EMPLOYEE   = process.env.AIRTABLE_EMPLOYEE_TABLE   || 'Employee Analytics';
@@ -347,9 +349,9 @@ app.post('/api/upload', async (req, res) => {
   }
 });
 
-// ─── Ask Stance (Make → Airtable → Claude) ──────────────────────────────────
-// Make scenario must: receive {question}, fetch Airtable data, call Claude,
-// and respond with: { summary, risk_level, recommendations[], confidence_score }
+// ─── Ask Stance (server.js → Python RAG function → Airtable + Claude) ──────
+// /api/rag-ask (api/ask.py) does retrieval + generation and responds with:
+// { summary, risk_level, recommendations[], confidence_score }
 
 app.post('/api/ask', async (req, res) => {
   const { question } = req.body || {};
@@ -357,15 +359,13 @@ app.post('/api/ask', async (req, res) => {
     return res.status(400).json({ error: 'question is required' });
   }
 
-  if (!MAKE_WEBHOOK_URL) {
-    return res.status(503).json({ error: 'MAKE_WEBHOOK_URL not configured — add it to .env' });
-  }
+  const target = RAG_API_URL || `https://${req.get('host')}/api/rag-ask`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 60000);
 
   try {
-    const makeRes = await fetch(MAKE_WEBHOOK_URL, {
+    const ragRes = await fetch(target, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question }),
@@ -373,19 +373,14 @@ app.post('/api/ask', async (req, res) => {
     });
     clearTimeout(timer);
 
-    if (!makeRes.ok) {
-      const body = await makeRes.text();
-      throw new Error(`Make ${makeRes.status}: ${body}`);
+    const data = await ragRes.json();
+    if (!ragRes.ok) {
+      throw new Error(data.error || `RAG endpoint ${ragRes.status}`);
     }
-
-    let raw = await makeRes.text();
-    // Strip markdown code fences Claude sometimes adds
-    raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
-    const data = JSON.parse(raw);
     res.json(data);
   } catch (err) {
     clearTimeout(timer);
-    const msg = err.name === 'AbortError' ? 'Make webhook timed out (60s)' : err.message;
+    const msg = err.name === 'AbortError' ? 'Ask Stance RAG endpoint timed out (60s)' : err.message;
     console.error('[/api/ask]', msg);
     res.status(500).json({ error: msg });
   }
@@ -396,7 +391,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     ok: true,
     configured: !!(API_KEY && BASE_ID),
-    makeWebhook: !!MAKE_WEBHOOK_URL,
+    csvUploadWebhook: !!MAKE_CSV_WEBHOOK_URL,
     tables: { employee: TABLE_EMPLOYEE, department: TABLE_DEPARTMENT, executive: TABLE_EXECUTIVE }
   });
 });

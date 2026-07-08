@@ -8,9 +8,20 @@
         "includeFiles": ["*.html", "*.css", "*.js", "*.jsx", "*.png", "assets/**/*"],
         "maxDuration": 60
       }
+    },
+    {
+      "src": "api/ask.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": "rag/**",
+        "maxDuration": 30
+      }
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "server.js" }],
+  "routes": [
+    { "src": "/api/rag-ask", "dest": "api/ask.py" },
+    { "src": "/(.*)", "dest": "server.js" }
+  ],
   "crons": [
     { "path": "/api/snapshot-stability", "schedule": "0 6 * * *" }
   ]
