@@ -3,3 +3,9 @@ node_modules/
 
 .vercel
 .env*
+
+# RAG module (Python) — local-only artifacts
+rag/chroma_db/
+rag/__pycache__/
+rag/**/__pycache__/
+*.pyc
