@@ -13,7 +13,7 @@ from . import config
 # "<recommendations>[...]</recommendations></invoke>") into the `summary`
 # text on low-confidence answers, even under forced tool_choice. Truncate
 # at the first such tag — legitimate prose summaries never contain one.
-_STRAY_TAG_RE = re.compile(r"<[a-zA-Z_][\w:-]*>")
+_STRAY_TAG_RE = re.compile(r"</?[a-zA-Z_][\w:-]*>")
 
 
 def _sanitize_text(value: str) -> str:
