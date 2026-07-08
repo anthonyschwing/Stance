@@ -14,7 +14,7 @@
       "use": "@vercel/python",
       "config": {
         "includeFiles": "rag/**",
-        "maxDuration": 30
+        "maxDuration": 60
       }
     }
   ],

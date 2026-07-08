@@ -18,6 +18,13 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 if os.environ.get("VERCEL"):
+    # $HOME in the Vercel Python sandbox is read-only; chromadb's ONNX
+    # embedding function caches its model under ~/.cache by default, which
+    # fails there. Redirect HOME/XDG_CACHE_HOME to /tmp before anything
+    # (chromadb, huggingface_hub, onnxruntime) resolves a cache path.
+    os.environ.setdefault("HOME", "/tmp")
+    os.environ.setdefault("XDG_CACHE_HOME", "/tmp/.cache")
+
     _bundled_db = Path(__file__).resolve().parent.parent / "rag" / "chroma_db"
     _tmp_db = Path("/tmp/chroma_db")
     if not _tmp_db.exists() and _bundled_db.exists():
@@ -57,9 +64,9 @@ class handler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b"{}"
 
         try:
-            data = json.loads(raw or b"{}")
-        except json.JSONDecodeError:
-            return self._send_json(400, {"error": "Invalid JSON body"})
+            data = json.loads((raw or b"{}").decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return self._send_json(400, {"error": "Invalid JSON body (must be UTF-8)"})
 
         question = (data or {}).get("question")
         if not question or not isinstance(question, str):
