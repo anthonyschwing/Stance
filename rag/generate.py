@@ -3,9 +3,22 @@ through a tool call so the output matches the JSON shape the existing
 Ask Stance frontend already expects from the Make webhook:
 { summary, risk_level, recommendations[], confidence_score }
 """
+import re
+
 from anthropic import Anthropic
 
 from . import config
+
+# Claude occasionally leaks stray tool-call-like markup (e.g.
+# "<recommendations>[...]</recommendations></invoke>") into the `summary`
+# text on low-confidence answers, even under forced tool_choice. Truncate
+# at the first such tag — legitimate prose summaries never contain one.
+_STRAY_TAG_RE = re.compile(r"<[a-zA-Z_][\w:-]*>")
+
+
+def _sanitize_text(value: str) -> str:
+    match = _STRAY_TAG_RE.search(value)
+    return (value[: match.start()] if match else value).strip()
 
 _client = None
 
@@ -85,6 +98,13 @@ def generate_answer(question: str, chunks: list[dict]) -> dict:
 
     for block in message.content:
         if block.type == "tool_use" and block.name == "answer_hr_question":
-            return block.input
+            result = dict(block.input)
+            if isinstance(result.get("summary"), str):
+                result["summary"] = _sanitize_text(result["summary"])
+            if isinstance(result.get("recommendations"), list):
+                result["recommendations"] = [
+                    _sanitize_text(r) for r in result["recommendations"] if isinstance(r, str)
+                ]
+            return result
 
     raise RuntimeError("Claude did not return a structured answer via the expected tool call")
