@@ -1,5 +1,13 @@
 # Stance
 
+**Stance** est une plateforme IA dédiée à l'analyse RH, pensée pour aider les équipes RH à anticiper les risques d'attrition et à accéder facilement à leurs données. Elle combine un dashboard analytique (heatmap d'attrition par région/secteur, KPIs exécutifs) et **Ask Stance**, un assistant conversationnel qui répond aux questions RH en langage naturel à partir des données de l'entreprise.
+
+Projet développé en solo, du cadrage métier à l'architecture technique — stack Node.js/Express, module RAG en Python, Airtable comme base de données, déployé sur Vercel.
+
+*Démo en production : [stancehr.com](https://stancehr.com)*
+
+---
+
 Plateforme HR Analytics : dashboard Express/React (`server.js` + `assets/`) et un module RAG isolé (`rag/`) pour Ask Stance, exposé en production comme fonction serverless Python (`api/ask.py`).
 
 ## Architecture Ask Stance
