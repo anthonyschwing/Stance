@@ -36,10 +36,23 @@ Le dossier `rag/chroma_db/` (index vectoriel pré-construit, ~20 Mo) est **commi
 | `ANTHROPIC_MODEL` | `api/ask.py` (runtime) | Défaut : `claude-sonnet-5` |
 | `MAKE_CSV_WEBHOOK_URL` | `server.js` | Upload CSV uniquement (`/api/upload`) — n'a plus de rôle dans Ask Stance |
 | `CRON_SECRET` | `server.js` | Authentifie le cron `/api/snapshot-stability` |
+| `AIRTABLE_TURNOVER_COST_TABLE` | `server.js` | Défaut : `Turnover_Cost_Assumptions` — hypothèse de coût de remplacement pour Cockpit |
+| `AIRTABLE_COCKPIT_BRIEFING_TABLE` | `server.js` | Défaut : `Cockpit_Briefings` — cache de la synthèse IA quotidienne de Cockpit |
 
 `RAG_CHROMA_COLLECTION`, `RAG_CHUNK_MAX_CHARS`, `RAG_CHUNK_OVERLAP_CHARS` sont optionnelles (voir `.env.example`) et n'ont besoin d'être définies que si tu changes le comportement de chunking par rapport aux défauts codés dans `rag/config.py`.
 
 `RAG_API_URL` est un override local uniquement (voir `.env.example`) ; en production, `server.js` appelle son propre domaine + `/api/rag-ask` automatiquement, aucune variable à définir sur Vercel pour ça.
+
+## Cockpit — espace décideur (COMEX / Direction)
+
+`Cockpit` (`/cockpit`, servi par `Stance Cockpit.html` + `assets/cockpit-*`) est un espace de navigation **distinct** du dashboard RH (`/dashboard`, Sentinelle) — pas un onglet de plus dedans. Il n'affiche que des agrégats (jamais de donnée au niveau salarié) : % de profils à risque par département/ancienneté, tendance, estimation du coût de turnover et une synthèse IA courte.
+
+- **Agrégats** (`/api/cockpit/summary`, `/api/cockpit/financial`) : calculés à la volée côté serveur à partir de `Employee Analytics`, pas de table Airtable dédiée à créer.
+- **Tendance** (`/api/cockpit/trend`) : réutilise `Workforce_Stability_Snapshots`, étendu avec deux champs `CriticalCount`/`HighCount` (voir `.env.example`).
+- **Hypothèse de coût** : table `Turnover_Cost_Assumptions` (champ `Avg Replacement Cost Ratio`, défaut 50% si la table n'existe pas encore) — modifiable dans Airtable sans redéploiement.
+- **Synthèse IA** : table `Cockpit_Briefings`, régénérée au plus une fois par jour via un appel direct à Claude (pas de scénario Make) — distincte d'`Executive_Summaries`, qui reste le message CEO de la landing page côté Sentinelle.
+
+**Accès** : différencié par un flag `role` (`RH` / `Direction`) choisi sur `/sign-in`, stocké dans un cookie `stance_role` et lu par le serveur (`getCookie` dans `server.js`) pour rediriger `/cockpit` vers `/sign-in` (pas de rôle) ou `/dashboard` (rôle `RH`). **Ce n'est pas un vrai système de permissions** — il n'y a aujourd'hui aucune authentification réelle dans l'app (le formulaire de `/sign-in` ne valide rien) ; ce flag rend juste l'accès role-différencié plutôt que basé uniquement sur l'obscurité de l'URL.
 
 ## Rafraîchir l'index Ask Stance (après changement de données Airtable)
 

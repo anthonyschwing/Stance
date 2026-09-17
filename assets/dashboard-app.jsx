@@ -522,6 +522,12 @@ function App() {
           )}
         </nav>
         <div className="side-foot">
+          {(() => { try { return localStorage.getItem('stance-role') === 'Direction'; } catch (_) { return false; } })() &&
+            <a className="snav" href="/cockpit" style={{ marginBottom: 6 }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
+              <span>{T('d.nav.cockpit', 'Cockpit — Direction view')}</span>
+            </a>
+          }
           <a className="userchip" href="/sign-in" style={{ textDecoration: 'none' }}>
             <span className="av">CL</span>
             <div style={{ flex: 1 }}><div className="un">Claire Lefèvre</div><div className="ur">{T('d.userrole', 'Chief People Officer')}</div></div>

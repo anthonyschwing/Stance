@@ -127,7 +127,78 @@ function computeStabilityAggregates(raw) {
   const attritionRate = hasAttrition ? Math.round((attritionCount / total) * 1000) / 10 : null;
   const avgRisk = total ? Math.round(raw.reduce((s, e) => s + (e['Risk Score'] || 0), 0) / total) : 0;
   const retentionRate = attritionRate != null ? Math.round((100 - attritionRate) * 10) / 10 : null;
-  return { total, attritionRate, avgRisk, retentionRate };
+  const criticalCount = raw.filter(e => e['Risk Level'] === 'Critical').length;
+  const highCount = raw.filter(e => e['Risk Level'] === 'High').length;
+  return { total, attritionRate, avgRisk, retentionRate, criticalCount, highCount };
+}
+
+// ─── Cockpit (executive aggregates — no individual-level data) ──────────────
+
+const TENURE_BUCKETS = ['0-1y', '1-3y', '3-5y', '5y+'];
+
+function tenureBucket(years) {
+  const y = +years || 0;
+  if (y <= 1) return '0-1y';
+  if (y <= 3) return '1-3y';
+  if (y <= 5) return '3-5y';
+  return '5y+';
+}
+
+function groupRiskCounts(rows) {
+  const counts = { Critical: 0, High: 0, Moderate: 0, Low: 0 };
+  rows.forEach(e => { if (counts[e['Risk Level']] != null) counts[e['Risk Level']]++; });
+  const headcount = rows.length;
+  const atRisk = counts.Critical + counts.High;
+  return {
+    headcount,
+    critical: counts.Critical,
+    high: counts.High,
+    moderate: counts.Moderate,
+    low: counts.Low,
+    atRisk,
+    atRiskPct: headcount ? Math.round((atRisk / headcount) * 1000) / 10 : 0
+  };
+}
+
+function computeCockpitSummary(employees) {
+  const byDeptMap = new Map();
+  const byTenureMap = new Map();
+
+  employees.forEach(e => {
+    const dept = e.Department || 'Unknown';
+    if (!byDeptMap.has(dept)) byDeptMap.set(dept, []);
+    byDeptMap.get(dept).push(e);
+
+    const bucket = tenureBucket(e.YearsAtCompany);
+    if (!byTenureMap.has(bucket)) byTenureMap.set(bucket, []);
+    byTenureMap.get(bucket).push(e);
+  });
+
+  const byDepartment = [...byDeptMap.entries()]
+    .map(([department, rows]) => ({ department, ...groupRiskCounts(rows) }))
+    .sort((a, b) => b.atRiskPct - a.atRiskPct);
+
+  const byTenure = TENURE_BUCKETS
+    .filter(b => byTenureMap.has(b))
+    .map(bucket => ({ bucket, ...groupRiskCounts(byTenureMap.get(bucket)) }));
+
+  return { ...groupRiskCounts(employees), byDepartment, byTenure };
+}
+
+const DEFAULT_REPLACEMENT_COST_RATIO = 0.5;
+
+function computeFinancialEstimate(employees, ratio) {
+  const r = typeof ratio === 'number' && ratio > 0 ? ratio : DEFAULT_REPLACEMENT_COST_RATIO;
+  const atRisk = employees.filter(e => e['Risk Level'] === 'Critical' || e['Risk Level'] === 'High');
+  const estimatedCost = atRisk.reduce((sum, e) => sum + (+e.MonthlyIncome || 0) * 12 * r, 0);
+  return {
+    ratio: r,
+    atRiskCount: atRisk.length,
+    criticalCount: atRisk.filter(e => e['Risk Level'] === 'Critical').length,
+    highCount: atRisk.filter(e => e['Risk Level'] === 'High').length,
+    estimatedCost: Math.round(estimatedCost),
+    currency: 'USD'
+  };
 }
 
 const PORT = process.env.PORT || 3000;
@@ -145,6 +216,11 @@ const TABLE_EMPLOYEE   = process.env.AIRTABLE_EMPLOYEE_TABLE   || 'Employee Anal
 const TABLE_DEPARTMENT = process.env.AIRTABLE_DEPARTMENT_TABLE || 'Department_rollups';
 const TABLE_EXECUTIVE  = process.env.AIRTABLE_EXECUTIVE_TABLE  || 'Executive_Summaries';
 const TABLE_STABILITY  = process.env.AIRTABLE_STABILITY_TABLE  || 'Workforce_Stability_Snapshots';
+const TABLE_TURNOVER_COST     = process.env.AIRTABLE_TURNOVER_COST_TABLE     || 'Turnover_Cost_Assumptions';
+const TABLE_COCKPIT_BRIEFING  = process.env.AIRTABLE_COCKPIT_BRIEFING_TABLE  || 'Cockpit_Briefings';
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const ANTHROPIC_MODEL   = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
 // ─── Airtable helper ────────────────────────────────────────────────────────
 
@@ -209,14 +285,107 @@ function isValidCronAuth(authHeader, secret) {
   return !!secret && authHeader === `Bearer ${secret}`;
 }
 
+// ─── Lightweight role flag (no real session system — see signin.html) ──────
+// Set as a plain cookie at sign-in. This is a UX/navigation gate, not a
+// security boundary: it differentiates the Cockpit space from the RH
+// dashboard so access isn't purely URL-obscurity based, but anyone can
+// still forge the cookie. Good enough for the current stage of the product.
+
+function getCookie(req, name) {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  const match = header.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 function mapStabilitySnapshots(records) {
   return records.map(r => ({
     date: r.Date,
     total: r.Total,
     attritionRate: r.AttritionRate,
     retentionRate: r.RetentionRate,
-    avgRisk: r.AvgRisk
+    avgRisk: r.AvgRisk,
+    // Only present on snapshots taken after Cockpit shipped — older rows
+    // fall back to null so trend charts can skip them instead of plotting 0.
+    criticalCount: r.CriticalCount != null ? r.CriticalCount : null,
+    highCount: r.HighCount != null ? r.HighCount : null
   }));
+}
+
+// ─── Cockpit helpers: replacement-cost ratio + AI briefing ─────────────────
+
+async function getTurnoverCostRatio() {
+  if (!API_KEY || !BASE_ID) return DEFAULT_REPLACEMENT_COST_RATIO;
+  try {
+    const records = await airtableFetch(TABLE_TURNOVER_COST, {
+      maxRecords: 1,
+      sort: [{ field: 'Effective Date', direction: 'desc' }]
+    });
+    const ratio = records[0] && +records[0]['Avg Replacement Cost Ratio'];
+    return ratio > 0 ? ratio : DEFAULT_REPLACEMENT_COST_RATIO;
+  } catch (err) {
+    console.warn('[getTurnoverCostRatio] falling back to default:', err.message);
+    return DEFAULT_REPLACEMENT_COST_RATIO;
+  }
+}
+
+const BRIEFING_TOOL = {
+  name: 'cockpit_briefing',
+  description: 'A short executive-level HR health synthesis, readable in a few seconds. No individual employee data.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      synthesis: {
+        type: 'string',
+        description: '2-3 sentence executive synthesis: overall HR health, the biggest hotspot, and the financial stake. No employee names or individual detail.'
+      },
+      overall_signal: {
+        type: 'string',
+        description: 'One of: Low, Moderate, High, Critical — the organization-wide risk signal.'
+      }
+    },
+    required: ['synthesis', 'overall_signal']
+  }
+};
+
+async function generateCockpitBriefing(summary, financial) {
+  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  const topDepartments = summary.byDepartment.slice(0, 3)
+    .map(d => `${d.department}: ${d.atRiskPct}% at risk (${d.critical} critical, ${d.high} high) of ${d.headcount}`)
+    .join('; ');
+
+  const prompt = `Organization-wide HR risk data (aggregated, no individual records):
+- Total headcount: ${summary.headcount}
+- At risk (critical + high): ${summary.atRisk} (${summary.atRiskPct}%)
+- Breakdown: ${summary.critical} critical, ${summary.high} high, ${summary.moderate} moderate, ${summary.low} low
+- Top departments by risk: ${topDepartments}
+- Estimated turnover cost exposure: $${financial.estimatedCost.toLocaleString('en-US')} (${financial.atRiskCount} at-risk profiles, ${Math.round(financial.ratio * 100)}% of annual salary per replacement)
+
+Write the executive synthesis for a COMEX/board audience who has a few seconds to read it.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 512,
+      system: 'You are Stance Cockpit, an executive HR-health briefing generator. Write only in aggregate, executive tone — never mention individual employees.',
+      tools: [BRIEFING_TOOL],
+      tool_choice: { type: 'tool', name: 'cockpit_briefing' },
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  const block = (data.content || []).find(b => b.type === 'tool_use' && b.name === 'cockpit_briefing');
+  if (!block) throw new Error('Claude did not return a structured cockpit briefing');
+  return block.input;
 }
 
 // ─── API routes ──────────────────────────────────────────────────────────────
@@ -291,9 +460,12 @@ app.get('/api/snapshot-stability', async (req, res) => {
     const raw = await getEmployees();
     if (!raw.length) return res.status(503).json({ error: 'No employee data available' });
 
-    const { total, attritionRate, avgRisk, retentionRate } = computeStabilityAggregates(raw);
+    const { total, attritionRate, avgRisk, retentionRate, criticalCount, highCount } = computeStabilityAggregates(raw);
     const today = new Date().toISOString().slice(0, 10);
-    const fields = { Date: today, Total: total, AttritionRate: attritionRate, RetentionRate: retentionRate, AvgRisk: avgRisk };
+    const fields = {
+      Date: today, Total: total, AttritionRate: attritionRate, RetentionRate: retentionRate, AvgRisk: avgRisk,
+      CriticalCount: criticalCount, HighCount: highCount
+    };
 
     const existing = await airtableFetch(TABLE_STABILITY, {
       filterByFormula: `{Date}='${today}'`,
@@ -322,6 +494,98 @@ app.get('/api/stability-history', async (req, res) => {
   } catch (err) {
     console.error('[/api/stability-history]', err.message);
     res.json([]);
+  }
+});
+
+// ─── Cockpit (executive space — aggregates only, see /cockpit below) ───────
+
+app.get('/api/cockpit/summary', async (req, res) => {
+  try {
+    const employees = await getEmployees();
+    if (!employees.length) return res.status(503).json({ error: 'No employee data available' });
+    res.json(computeCockpitSummary(employees));
+  } catch (err) {
+    console.error('[/api/cockpit/summary]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/cockpit/trend', async (req, res) => {
+  try {
+    const records = await airtableFetch(TABLE_STABILITY, {
+      sort: [{ field: 'Date', direction: 'asc' }]
+    });
+    res.json(mapStabilitySnapshots(records));
+  } catch (err) {
+    console.error('[/api/cockpit/trend]', err.message);
+    res.json([]);
+  }
+});
+
+app.get('/api/cockpit/financial', async (req, res) => {
+  try {
+    const employees = await getEmployees();
+    if (!employees.length) return res.status(503).json({ error: 'No employee data available' });
+    const ratio = await getTurnoverCostRatio();
+    res.json(computeFinancialEstimate(employees, ratio));
+  } catch (err) {
+    console.error('[/api/cockpit/financial]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/cockpit/briefing', async (req, res) => {
+  try {
+    const employees = await getEmployees();
+    if (!employees.length) return res.status(503).json({ error: 'No employee data available' });
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    if (API_KEY && BASE_ID) {
+      try {
+        const existing = await airtableFetch(TABLE_COCKPIT_BRIEFING, {
+          filterByFormula: `{Date}='${today}'`,
+          maxRecords: 1
+        });
+        if (existing.length) {
+          return res.json({
+            date: today,
+            synthesis: existing[0].Synthesis,
+            overallSignal: existing[0].Overall_Signal,
+            turnoverCostEstimate: existing[0].Turnover_Cost_Estimate
+          });
+        }
+      } catch (err) {
+        console.warn('[/api/cockpit/briefing] Cockpit_Briefings read failed, will regenerate:', err.message);
+      }
+    }
+
+    const summary = computeCockpitSummary(employees);
+    const ratio = await getTurnoverCostRatio();
+    const financial = computeFinancialEstimate(employees, ratio);
+    const briefing = await generateCockpitBriefing(summary, financial);
+
+    const record = {
+      date: today,
+      synthesis: briefing.synthesis,
+      overallSignal: briefing.overall_signal,
+      turnoverCostEstimate: financial.estimatedCost
+    };
+
+    if (API_KEY && BASE_ID) {
+      airtableWrite('POST', TABLE_COCKPIT_BRIEFING, {
+        Date: today,
+        Synthesis: briefing.synthesis,
+        Overall_Signal: briefing.overall_signal,
+        Turnover_Cost_Estimate: financial.estimatedCost,
+        Generated_At: new Date().toISOString()
+      }).catch(err => console.warn('[/api/cockpit/briefing] could not persist briefing:', err.message));
+    }
+
+    res.json(record);
+  } catch (err) {
+    console.error('[/api/cockpit/briefing]', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -392,7 +656,11 @@ app.get('/api/health', (req, res) => {
     ok: true,
     configured: !!(API_KEY && BASE_ID),
     csvUploadWebhook: !!MAKE_CSV_WEBHOOK_URL,
-    tables: { employee: TABLE_EMPLOYEE, department: TABLE_DEPARTMENT, executive: TABLE_EXECUTIVE }
+    tables: {
+      employee: TABLE_EMPLOYEE, department: TABLE_DEPARTMENT, executive: TABLE_EXECUTIVE,
+      turnoverCost: TABLE_TURNOVER_COST, cockpitBriefing: TABLE_COCKPIT_BRIEFING
+    },
+    anthropicConfigured: !!ANTHROPIC_API_KEY
   });
 });
 
@@ -403,6 +671,18 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'Stance Landing.htm
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'Stance Dashboard.html')));
 app.get('/employee', (req, res) => res.redirect('/dashboard#employee'));
 app.get('/sign-in', (req, res) => res.sendFile(path.join(__dirname, 'signin.html')));
+
+// Cockpit is a distinct navigation space for Direction/COMEX — gated by the
+// lightweight `stance_role` cookie set at sign-in (see signin.html). This is
+// not a real permission system (no session, no server-side auth anywhere in
+// this app yet) — it just means access is role-differentiated rather than
+// purely URL-obscurity based.
+app.get('/cockpit', (req, res) => {
+  const role = getCookie(req, 'stance_role');
+  if (!role) return res.redirect('/sign-in');
+  if (role !== 'Direction') return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, 'Stance Cockpit.html'));
+});
 
 if (require.main === module) {
   app.listen(PORT, () => {
@@ -415,6 +695,9 @@ if (require.main === module) {
   });
 }
 
-Object.assign(app, { getEmployees, computeStabilityAggregates, isValidCronAuth, mapStabilitySnapshots });
+Object.assign(app, {
+  getEmployees, computeStabilityAggregates, isValidCronAuth, mapStabilitySnapshots,
+  getCookie, tenureBucket, computeCockpitSummary, computeFinancialEstimate
+});
 
 module.exports = app;
