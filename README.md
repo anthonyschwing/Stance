@@ -38,6 +38,7 @@ Le dossier `rag/chroma_db/` (index vectoriel pré-construit, ~20 Mo) est **commi
 | `CRON_SECRET` | `server.js` | Authentifie le cron `/api/snapshot-stability` |
 | `AIRTABLE_TURNOVER_COST_TABLE` | `server.js` | Défaut : `Turnover_Cost_Assumptions` — hypothèse de coût de remplacement pour Cockpit |
 | `AIRTABLE_COCKPIT_BRIEFING_TABLE` | `server.js` | Défaut : `Cockpit_Briefings` — cache de la synthèse IA quotidienne de Cockpit |
+| `AIRTABLE_MAPPING_TABLE` | `server.js` | Défaut : `Client_Field_Mappings` — mapping de colonnes mémorisé par client |
 
 `RAG_CHROMA_COLLECTION`, `RAG_CHUNK_MAX_CHARS`, `RAG_CHUNK_OVERLAP_CHARS` sont optionnelles (voir `.env.example`) et n'ont besoin d'être définies que si tu changes le comportement de chunking par rapport aux défauts codés dans `rag/config.py`.
 
@@ -53,6 +54,29 @@ Le dossier `rag/chroma_db/` (index vectoriel pré-construit, ~20 Mo) est **commi
 - **Synthèse IA** : table `Cockpit_Briefings`, régénérée au plus une fois par jour via un appel direct à Claude (pas de scénario Make) — distincte d'`Executive_Summaries`, qui reste le message CEO de la landing page côté Sentinelle.
 
 **Accès** : différencié par un flag `role` (`RH` / `Direction`) choisi sur `/sign-in`, stocké dans un cookie `stance_role` et lu par le serveur (`getCookie` dans `server.js`) pour rediriger `/cockpit` vers `/sign-in` (pas de rôle) ou `/dashboard` (rôle `RH`). **Ce n'est pas un vrai système de permissions** — il n'y a aujourd'hui aucune authentification réelle dans l'app (le formulaire de `/sign-in` ne valide rien) ; ce flag rend juste l'accès role-différencié plutôt que basé uniquement sur l'obscurité de l'URL.
+
+## Import client — mapping de colonnes intelligent
+
+Sentinelle attend en interne le schéma exact du dataset IBM HR Attrition (`Department`, `YearsAtCompany`, `MonthlyIncome`, `OverTime`, `JobSatisfaction`, etc. — liste complète et niveaux obligatoire/recommandé dans `field-schema.js`). Un client dont l'export CSV/Excel utilise d'autres noms de colonnes n'a plus besoin d'être re-câblé à la main :
+
+```
+Dépôt fichier (CSV/Excel)
+  → POST /api/import/inspect          lit les en-têtes + quelques lignes d'exemple
+  → POST /api/import/mapping/suggest  Claude propose une correspondance par colonne
+                                       (réutilise le mapping déjà confirmé pour ce
+                                       client s'il existe, ne rappelle Claude que sur
+                                       les colonnes encore inconnues)
+  → écran de validation (assets/import-flow.jsx) — jamais appliqué sans confirmation,
+    bloque tant qu'un champ obligatoire n'a pas de correspondance
+  → POST /api/import/mapping/confirm  persiste le mapping dans Client_Field_Mappings,
+                                       traduit les lignes vers le schéma interne, puis
+                                       réutilise le chemin existant /api/upload →
+                                       MAKE_CSV_WEBHOOK_URL, inchangé
+```
+
+Cette couche ne touche ni au scénario Make ni aux tables Airtable existantes (`Employee Analytics`, `Department_rollups`, `HR_Uploads`) — c'est une traduction en amont. "Client" est aujourd'hui un simple identifiant texte saisi à l'écran d'import (pas un vrai compte/tenant — l'app n'a pas de système d'authentification), qui sert uniquement à retrouver un mapping déjà validé d'un import à l'autre.
+
+Point technique : la lecture des fichiers `.xlsx` utilise le paquet `xlsx`, installé depuis le CDN officiel SheetJS (`cdn.sheetjs.com`) plutôt que depuis npm — la version publiée sur npm a des CVE non corrigées (prototype pollution, ReDoS), SheetJS ne publie ses builds patchés que sur son propre CDN.
 
 ## Rafraîchir l'index Ask Stance (après changement de données Airtable)
 

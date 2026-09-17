@@ -399,8 +399,7 @@
     'gate.desc':           "Cette démo de Stance analyse le dataset IBM HR Analytics Employee Attrition — la référence standard en recherche RH, utilisée pour illustrer les capacités du moteur d'analyse.",
     'gate.cta':            'Charger le jeu de données IBM HR',
     'gate.cta.sub':        '1 470 employés · résultat en 3 secondes',
-    'gate.future.badge':   'Bientôt disponible',
-    'gate.future.text':    'Import de vos propres données RH (Workday, BambooHR, SAP SuccessFactors, CSV personnalisé)',
+    'gate.own.cta':        'Importer vos propres données RH (CSV ou Excel) →',
 
     /* ---- dashboard context banner ---- */
     'demo.banner':     "Démo basée sur le dataset IBM HR Analytics (1 470 employés)",

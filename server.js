@@ -2,9 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const XLSX = require('xlsx');
+const { REQUIRED_FIELDS, MAPPABLE_FIELDS, describeFieldsForPrompt } = require('./field-schema');
 
 const app = express();
-app.use(express.json());
+// Default 100kb limit is too small for a base64-encoded Excel HR export
+app.use(express.json({ limit: '15mb' }));
 
 // ─── IBM HR CSV fallback helpers ─────────────────────────────────────────────
 
@@ -218,6 +221,7 @@ const TABLE_EXECUTIVE  = process.env.AIRTABLE_EXECUTIVE_TABLE  || 'Executive_Sum
 const TABLE_STABILITY  = process.env.AIRTABLE_STABILITY_TABLE  || 'Workforce_Stability_Snapshots';
 const TABLE_TURNOVER_COST     = process.env.AIRTABLE_TURNOVER_COST_TABLE     || 'Turnover_Cost_Assumptions';
 const TABLE_COCKPIT_BRIEFING  = process.env.AIRTABLE_COCKPIT_BRIEFING_TABLE  || 'Cockpit_Briefings';
+const TABLE_MAPPING           = process.env.AIRTABLE_MAPPING_TABLE           || 'Client_Field_Mappings';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL   = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
@@ -386,6 +390,170 @@ Write the executive synthesis for a COMEX/board audience who has a few seconds t
   const block = (data.content || []).find(b => b.type === 'tool_use' && b.name === 'cockpit_briefing');
   if (!block) throw new Error('Claude did not return a structured cockpit briefing');
   return block.input;
+}
+
+// ─── Client data import — smart column mapping ──────────────────────────────
+// Translates a client's raw CSV/Excel export into the IBM-schema column
+// names Sentinelle/Make already expect, upstream of the existing
+// /api/upload → Make pipeline. Never writes to Airtable/Employee Analytics
+// directly and never touches the Make scenario — purely a translation layer.
+
+function normalizeHeader(h) {
+  return String(h || '').trim().toLowerCase();
+}
+
+function parseExcelBuffer(buffer) {
+  const wb = XLSX.read(buffer, { type: 'buffer' });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+}
+
+function parseImportFile(fileData, filename) {
+  const name = (filename || '').toLowerCase();
+  if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    return parseExcelBuffer(Buffer.from(fileData, 'base64'));
+  }
+  return parseCSV(fileData);
+}
+
+function csvEscape(v) {
+  const s = v == null ? '' : String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function rowsToCSV(rows) {
+  if (!rows.length) return '';
+  const headers = Object.keys(rows[0]);
+  const lines = [headers.map(csvEscape).join(',')];
+  rows.forEach(row => lines.push(headers.map(h => csvEscape(row[h])).join(',')));
+  return lines.join('\n');
+}
+
+// Renames columns to their mapped internal field name; unmapped source
+// columns are dropped. Never guesses — only what the user confirmed.
+function applyMapping(rows, mapping) {
+  const active = mapping.filter(m => m.internalField && m.internalField !== 'none');
+  return rows.map(row => {
+    const out = {};
+    active.forEach(m => { out[m.internalField] = row[m.sourceColumn]; });
+    return out;
+  });
+}
+
+const MAPPING_TOOL = {
+  name: 'propose_field_mapping',
+  description: 'Propose which internal Stance field each raw column from a client HR export corresponds to.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      mappings: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            sourceColumn: { type: 'string' },
+            internalField: { type: 'string', description: 'One of the listed internal field keys, or "none" if no confident match exists.' },
+            confidence: { type: 'number', description: '0-100' }
+          },
+          required: ['sourceColumn', 'internalField', 'confidence']
+        }
+      }
+    },
+    required: ['mappings']
+  }
+};
+
+async function suggestFieldMapping(headers, sampleRows) {
+  if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  const columnLines = headers.map(h => {
+    const examples = sampleRows.map(r => r[h]).filter(v => v !== undefined && v !== '').slice(0, 3).join(' | ');
+    return `- "${h}" — example values: ${examples || '(empty)'}`;
+  }).join('\n');
+
+  const prompt = `Internal Stance fields available for mapping:\n${describeFieldsForPrompt()}\n\n` +
+    `Raw columns detected in the client's file:\n${columnLines}\n\n` +
+    `For every raw column, propose the single best-matching internal field key from the list above, ` +
+    `or "none" if nothing matches confidently. Never invent a field key that isn't in the list above.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1536,
+      system: 'You are Stance\'s data-import assistant. Map raw HR export columns to a fixed internal schema. Be conservative: if a column\'s meaning is ambiguous, return "none" rather than guessing.',
+      tools: [MAPPING_TOOL],
+      tool_choice: { type: 'tool', name: 'propose_field_mapping' },
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  const block = (data.content || []).find(b => b.type === 'tool_use' && b.name === 'propose_field_mapping');
+  if (!block) throw new Error('Claude did not return a structured mapping');
+  return block.input.mappings || [];
+}
+
+async function getConfirmedMapping(client) {
+  if (!API_KEY || !BASE_ID || !client) return {};
+  try {
+    const records = await airtableFetch(TABLE_MAPPING, {
+      filterByFormula: `AND({Client}='${String(client).replace(/'/g, "\\'")}', {Status}='Confirmed')`
+    });
+    const map = {};
+    records.forEach(r => {
+      if (r.Source_Column && r.Internal_Field) map[normalizeHeader(r.Source_Column)] = r.Internal_Field;
+    });
+    return map;
+  } catch (err) {
+    console.warn('[getConfirmedMapping] falling back to no cached mapping:', err.message);
+    return {};
+  }
+}
+
+async function upsertMappingRecords(client, filename, mapping) {
+  if (!API_KEY || !BASE_ID) return;
+  const active = mapping.filter(m => m.internalField && m.internalField !== 'none');
+  const today = new Date().toISOString().slice(0, 10);
+
+  for (const m of active) {
+    try {
+      const existing = await airtableFetch(TABLE_MAPPING, {
+        filterByFormula: `AND({Client}='${String(client).replace(/'/g, "\\'")}', {Internal_Field}='${m.internalField}')`,
+        maxRecords: 1
+      });
+      const fields = {
+        Client: client,
+        Internal_Field: m.internalField,
+        Source_Column: m.sourceColumn,
+        Sample_Value: m.sampleValue != null ? String(m.sampleValue) : '',
+        Status: 'Confirmed',
+        Confirmed_At: today,
+        Source_File: filename || ''
+      };
+      if (existing.length) await airtableWrite('PATCH', TABLE_MAPPING, fields, existing[0].id);
+      else await airtableWrite('POST', TABLE_MAPPING, fields);
+    } catch (err) {
+      console.warn(`[upsertMappingRecords] could not persist mapping for ${m.internalField}:`, err.message);
+    }
+  }
+}
+
+async function forwardCsvToMake(csvData, filename) {
+  if (!MAKE_CSV_WEBHOOK_URL) throw new Error('MAKE_CSV_WEBHOOK_URL not configured');
+  const makeRes = await fetch(MAKE_CSV_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ csv_data: csvData, filename: filename || 'upload.csv' })
+  });
+  console.log('[forwardCsvToMake] Make responded:', makeRes.status);
+  return makeRes.status;
 }
 
 // ─── API routes ──────────────────────────────────────────────────────────────
@@ -595,21 +763,129 @@ app.post('/api/upload', async (req, res) => {
   const { csv_data, filename } = req.body || {};
   if (!csv_data) return res.status(400).json({ error: 'csv_data is required' });
 
-  if (!MAKE_CSV_WEBHOOK_URL) {
-    return res.status(503).json({ error: 'MAKE_CSV_WEBHOOK_URL not configured' });
-  }
-
   try {
-    const makeRes = await fetch(MAKE_CSV_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ csv_data, filename: filename || 'upload.csv' })
-    });
-    console.log('[/api/upload] Make responded:', makeRes.status);
+    await forwardCsvToMake(csv_data, filename);
     res.json({ ok: true });
   } catch (err) {
     console.error('[/api/upload]', err.message);
+    const status = err.message === 'MAKE_CSV_WEBHOOK_URL not configured' ? 503 : 500;
+    res.status(status).json({ error: err.message });
+  }
+});
+
+// ─── Client data import — smart column mapping ─────────────────────────────
+
+app.get('/api/import/fields', (req, res) => res.json(MAPPABLE_FIELDS));
+
+app.post('/api/import/inspect', (req, res) => {
+  const { file_data, filename } = req.body || {};
+  if (!file_data) return res.status(400).json({ error: 'file_data is required' });
+
+  try {
+    const rows = parseImportFile(file_data, filename);
+    if (!rows.length) return res.status(400).json({ error: 'File has no readable rows' });
+    res.json({ headers: Object.keys(rows[0]), sampleRows: rows.slice(0, 5), rowCount: rows.length });
+  } catch (err) {
+    console.error('[/api/import/inspect]', err.message);
+    res.status(400).json({ error: `Could not read file: ${err.message}` });
+  }
+});
+
+app.post('/api/import/mapping/suggest', async (req, res) => {
+  const { file_data, filename, client } = req.body || {};
+  if (!file_data) return res.status(400).json({ error: 'file_data is required' });
+
+  try {
+    const rows = parseImportFile(file_data, filename);
+    if (!rows.length) return res.status(400).json({ error: 'File has no readable rows' });
+
+    const headers = Object.keys(rows[0]);
+    const sample = rows.slice(0, 5);
+
+    const cached = await getConfirmedMapping(client);
+    const unresolved = headers.filter(h => !cached[normalizeHeader(h)]);
+
+    const suggestions = unresolved.length ? await suggestFieldMapping(unresolved, sample) : [];
+
+    const mapping = headers.map(h => {
+      const firstNonEmpty = sample.find(r => r[h] !== undefined && r[h] !== '');
+      const sampleValue = firstNonEmpty ? firstNonEmpty[h] : '';
+      const cachedField = cached[normalizeHeader(h)];
+
+      if (cachedField) {
+        return { sourceColumn: h, internalField: cachedField, confidence: 100, status: 'Reused', sampleValue };
+      }
+      const s = unresolved.includes(h) ? suggestions.find(x => x.sourceColumn === h) : null;
+      const internalField = s && s.internalField !== 'none' ? s.internalField : null;
+      return {
+        sourceColumn: h,
+        internalField,
+        confidence: s ? s.confidence : 0,
+        status: internalField ? 'Suggested' : 'Unmapped',
+        sampleValue
+      };
+    });
+
+    const missingRequired = REQUIRED_FIELDS.filter(f => !mapping.some(m => m.internalField === f));
+
+    res.json({ mapping, missingRequired, rowCount: rows.length });
+  } catch (err) {
+    console.error('[/api/import/mapping/suggest]', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/import/mapping/confirm', async (req, res) => {
+  const { file_data, filename, client, mapping } = req.body || {};
+  if (!file_data) return res.status(400).json({ error: 'file_data is required' });
+  if (!client || !String(client).trim()) return res.status(400).json({ error: 'client is required to save this mapping' });
+  if (!Array.isArray(mapping) || !mapping.length) return res.status(400).json({ error: 'mapping is required' });
+
+  const seen = new Map();
+  for (const m of mapping) {
+    if (!m.internalField || m.internalField === 'none') continue;
+    if (seen.has(m.internalField)) {
+      return res.status(400).json({ error: `Two columns are both mapped to "${m.internalField}" — pick one before confirming.` });
+    }
+    seen.set(m.internalField, m.sourceColumn);
+  }
+
+  const missingRequired = REQUIRED_FIELDS.filter(f => !seen.has(f));
+  if (missingRequired.length) {
+    return res.status(400).json({ error: 'Required fields are not mapped', missingRequired });
+  }
+
+  try {
+    const rows = parseImportFile(file_data, filename);
+    if (!rows.length) return res.status(400).json({ error: 'File has no readable rows' });
+
+    const transformed = applyMapping(rows, mapping);
+    const csvText = rowsToCSV(transformed);
+
+    await upsertMappingRecords(client, filename, mapping);
+    await forwardCsvToMake(csvText, filename || 'import.csv');
+
+    res.json({ ok: true, client, rowsImported: transformed.length });
+  } catch (err) {
+    console.error('[/api/import/mapping/confirm]', err.message);
+    const status = err.message === 'MAKE_CSV_WEBHOOK_URL not configured' ? 503 : 500;
+    res.status(status).json({ error: err.message });
+  }
+});
+
+app.get('/api/import/mapping/:client', async (req, res) => {
+  try {
+    const records = await airtableFetch(TABLE_MAPPING, {
+      filterByFormula: `AND({Client}='${req.params.client.replace(/'/g, "\\'")}', {Status}='Confirmed')`
+    });
+    res.json(records.map(r => ({
+      internalField: r.Internal_Field,
+      sourceColumn: r.Source_Column,
+      confirmedAt: r.Confirmed_At
+    })));
+  } catch (err) {
+    console.error('[/api/import/mapping/:client]', err.message);
+    res.json([]);
   }
 });
 
@@ -697,7 +973,8 @@ if (require.main === module) {
 
 Object.assign(app, {
   getEmployees, computeStabilityAggregates, isValidCronAuth, mapStabilitySnapshots,
-  getCookie, tenureBucket, computeCockpitSummary, computeFinancialEstimate
+  getCookie, tenureBucket, computeCockpitSummary, computeFinancialEstimate,
+  normalizeHeader, applyMapping, rowsToCSV, csvEscape, parseImportFile
 });
 
 module.exports = app;

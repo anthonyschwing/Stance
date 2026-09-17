@@ -106,6 +106,7 @@ function ThemeToggle() {
    Analytics dataset today, so the gate offers exactly one action instead
    of implying arbitrary-file import is supported. */
 function ImportGate({ onLoad }) {
+  const [showImport, setShowImport] = uState(false);
   return (
     <div className="gate-screen">
       <div className="import-gate">
@@ -116,10 +117,12 @@ function ImportGate({ onLoad }) {
           <span className="btn-sub">{window.T('gate.cta.sub', '1,470 employees · results in 3 seconds')}</span>
         </button>
         <div className="future-feature">
-          <span className="badge">{window.T('gate.future.badge', 'Coming soon')}</span>
-          {window.T('gate.future.text', 'Import your own HR data (Workday, BambooHR, SAP SuccessFactors, custom CSV)')}
+          <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => setShowImport(true)}>
+            {window.T('gate.own.cta', 'Import your own HR data (CSV or Excel) →')}
+          </button>
         </div>
       </div>
+      {showImport && <ImportFlow onClose={() => setShowImport(false)} />}
     </div>);
 }
 
