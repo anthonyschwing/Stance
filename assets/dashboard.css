@@ -666,6 +666,7 @@
 .imp-loading, .imp-done { text-align: center; padding: 30px 10px; color: var(--text-2); font-size: 14px; }
 .imp-done .btn { margin-top: 16px; }
 .imp-pick .btn { margin-top: 20px; width: 100%; }
+.imp-review .btn:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.4); }
 .imp-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 18px; }
 .imp-table th { text-align: left; font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-4); padding: 6px 10px; border-bottom: 1px solid var(--line-2); }
 .imp-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
